@@ -1,0 +1,46 @@
+# ─── Environment & Secrets ──────────────────────────────────
+.env
+*.env
+*.env.*
+
+# ─── IDE & System ──────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Project Directories ───────────────────────────────────
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/build/
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/key.properties
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/Flutter/Flutter.framework
+frontend/ios/Flutter/Flutter.podspec
+
+
+# ─── Tools & Scripts ──────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+scripts/__pycache__/
+setup/*.csv
+
+# ─── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Data & Others ──────────────────────────────────────────
+ytm.json
+# test/
+
+setup/
+
+scripts/

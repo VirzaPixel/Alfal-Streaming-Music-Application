@@ -1,0 +1,65 @@
+name: alfal_music
+description: ALFAL – A modern music streaming application.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── Backend & Networking ────────────────────────────────────
+  supabase_flutter: ^2.8.1
+  
+  # ── State Management ────────────────────────────────────────
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Audio Playback ───────────────────────────────────────────
+  just_audio: ^0.9.43
+  audio_session: ^0.1.21
+
+  # ── Image Loading ────────────────────────────────────────────
+  cached_network_image: ^3.4.1
+
+  # ── Storage (token persistence) ──────────────────────────────
+  shared_preferences: ^2.3.3
+
+  # ── UI Helpers ───────────────────────────────────────────────
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
+  palette_generator: ^0.3.3+3
+  percent_indicator: ^4.2.3
+
+  # ── Icons ────────────────────────────────────────────────────
+  cupertino_icons: ^1.0.8
+  image_picker: ^1.2.1
+  flutter_animate: ^4.5.2
+  flutter_dotenv: ^6.0.0
+  cloudinary_public: ^0.23.1
+  youtube_explode_dart: ^3.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.4.3
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/logo/alfal_logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/logo/
+    - .env
