@@ -1,6 +1,6 @@
 Installer :
 
-https://github.com/VirzaPixel/Alfal-Streaming-Music-Application/releases/tag/v1.0/app-release.apk
+https://github.com/VirzaPixel/Alfal-Streaming-Music-Application/releases/download/v1.0/app-release.apk
 
 ---
 
