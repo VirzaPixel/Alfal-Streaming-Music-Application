@@ -1,3 +1,9 @@
+Installer :
+
+
+
+---
+
 # 🎵 ALFAL — Music Without Limits
 
 ALFAL is a high-performance, aesthetically pleasing music streaming ecosystem. It features a robust **Flutter** frontend, a scalable **Supabase** backend, and high-quality media delivery via **Cloudinary**.
