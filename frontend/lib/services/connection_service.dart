@@ -55,14 +55,42 @@ class ConnectionService {
     return UserModel.fromJson(data);
   }
 
-  // 5. Search Users
+  // 5. Get Followers List
+  Future<List<UserModel>> getFollowers(String userId) async {
+    final res = await _client
+        .from('follows')
+        .select('''
+          follower_id,
+          profiles!follower_id(*)
+        ''')
+        .eq('following_id', userId);
+    
+    return (res as List).map((json) => UserModel.fromJson(json['profiles'])).toList();
+  }
+
+  // 6. Get Following List
+  Future<List<UserModel>> getFollowing(String userId) async {
+    final res = await _client
+        .from('follows')
+        .select('''
+          following_id,
+          profiles!following_id(*)
+        ''')
+        .eq('follower_id', userId);
+    
+    return (res as List).map((json) => UserModel.fromJson(json['profiles'])).toList();
+  }
+
+  // 7. Search Users
   Future<List<UserModel>> searchUsers(String query) async {
     if (query.isEmpty) return [];
     
+    // Admins are hidden from search results for security
     final res = await _client
         .from('profiles')
         .select()
         .ilike('username', '%$query%')
+        .neq('role', 'admin')
         .limit(20);
     
     return (res as List).map((json) => UserModel.fromJson(json)).toList();

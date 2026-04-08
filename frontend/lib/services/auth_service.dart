@@ -15,16 +15,25 @@ class AuthService {
   }
 
   Future<UserModel> register(String email, String username, String password) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    
     final res = await _supabase.auth.signUp(
-      email: email,
+      email: normalizedEmail,
       password: password,
       data: {'username': username},
     );
     
     if (res.user == null) throw Exception('Registration failed');
     
-    // For unconfirmed users, return a temporary model
-    // Profile will be created by a Supabase trigger or after email confirm
+    // CRITICAL FIX: After signUp, Supabase creates a temporary unconfirmed session
+    // in device memory. This ghost session conflicts with OTP verification and makes
+    // the token appear expired. We must sign out to clear it.
+    // The OTP email is already sent at this point, so this does NOT affect delivery.
+    final isConfirmed = res.user!.emailConfirmedAt != null;
+    if (!isConfirmed) {
+      await _supabase.auth.signOut();
+    }
+    
     return UserModel(
       id: res.user!.id,
       email: email,
@@ -33,9 +42,44 @@ class AuthService {
     );
   }
 
+  Future<UserModel> verifyOTP(String email, String token) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    
+    final res = await _supabase.auth.verifyOTP(
+      email: normalizedEmail,
+      token: token.trim(),
+      type: OtpType.signup,
+    );
+
+    if (res.user == null) {
+      throw Exception('Verification failed: No user returned');
+    }
+
+    try {
+      return await getProfile(res.user!.id);
+    } catch (_) {
+      // If profile is not ready yet, return a basic user model
+      return UserModel(
+        id: res.user!.id,
+        email: email,
+        username: res.user!.userMetadata?['username'] ?? 'User',
+        role: 'user',
+      );
+    }
+  }
+
+  Future<void> resendOTP(String email) async {
+    await _supabase.auth.resend(
+      type: OtpType.signup,
+      email: email,
+    );
+  }
+
   Future<void> logout() async {
     await _supabase.auth.signOut();
   }
+
+  bool get isSessionActive => _supabase.auth.currentSession != null;
 
   UserModel? get currentUser {
     final user = _supabase.auth.currentUser;
@@ -93,7 +137,15 @@ class AuthService {
       // Profile might not exist yet (e.g., after register without confirm)
       // Build a basic model from auth data
       final authUser = _supabase.auth.currentUser;
-      throw Exception('Profile not available: ${e.message}. Email: ${authUser?.email}');
+      if (authUser != null) {
+        return UserModel(
+          id: id,
+          email: authUser.email ?? '',
+          username: authUser.userMetadata?['username'] ?? 'User',
+          role: 'user',
+        );
+      }
+      throw Exception('Profile not available: ${e.message}');
     }
   }
 }

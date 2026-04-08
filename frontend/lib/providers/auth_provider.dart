@@ -43,13 +43,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // We check if a session already exists from the previous run.
     final currentUser = _service.currentUser;
     if (currentUser != null) {
-      // User is already logged in, show MainShell immediately
       state = state.copyWith(user: currentUser, isLoading: false);
-      // Refresh full profile (username, avatar) in background
       _refreshProfile(currentUser.id);
     } else {
-      // No session found, default to guest so app.dart shows MainShell immediately
-      continueAsGuest();
+      // Start with null user to force LoginScreen as per new design
+      state = state.copyWith(user: null, isLoading: false);
     }
   }
 
@@ -73,8 +71,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> register(String email, String username, String password) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final user = await _service.register(email, username, password);
+      await _service.register(email, username, password);
+      // After register, session is cleared (ghost session fix).
+      // User must verify OTP — keep state as null (unauthenticated).
+      // SignupScreen will navigate to VerifyOTPScreen.
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _parseError(e));
+    }
+  }
+
+  Future<void> verifyOTP(String email, String token) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final user = await _service.verifyOTP(email, token);
       state = state.copyWith(user: user, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _parseError(e));
+      rethrow;
+    }
+  }
+
+  Future<void> resendOTP(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _service.resendOTP(email);
+      state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: _parseError(e));
     }
@@ -94,27 +116,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    // 1. Instant feedback: switch to guest state
-    continueAsGuest();
-
-    // 2. Stop music without awaiting (no reason to wait for UI update)
+    await _service.logout();
+    state = const AuthState(user: null, isLoading: false);
     _ref.read(playerProvider.notifier).stop();
-
-    // 3. Clear backend session in background (non-blocking)
-    // We don't await this so the UI can jump to Home immediately.
-    _service.logout().catchError((_) {});
   }
 
   void continueAsGuest() {
-    state = state.copyWith(
-      user: const UserModel(
-        id: 'guest_id',
-        email: 'guest@alfal.local',
-        username: 'Guest Explorer',
+    state = const AuthState(
+      user: UserModel(
+        id: 'guest_primary',
+        email: 'guest@alfal.app',
+        username: 'Guest User',
         role: 'guest',
       ),
       isLoading: false,
-      clearError: true,
     );
   }
 
@@ -122,6 +137,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final str = e.toString().toLowerCase();
     if (str.contains('invalid login credentials')) return 'Email atau password salah.';
     if (str.contains('user already registered')) return 'Email sudah terdaftar.';
+    if (str.contains('email not confirmed')) return 'Email belum diverifikasi. Silakan masukkan kode OTP dari email Anda.';
+    if (str.contains('rate limit') || str.contains('over_email_send_rate_limit') || str.contains('429')) {
+      return 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.';
+    }
+    if (str.contains('otp_expired') || str.contains('token has expired')) {
+      return 'Kode OTP sudah kadaluarsa. Klik "Resend" untuk mendapatkan kode baru.';
+    }
     if (str.contains('network') || str.contains('socketexception')) {
       return 'Masalah koneksi. Periksa internet Anda.';
     }

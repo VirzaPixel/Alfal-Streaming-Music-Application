@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
 
@@ -14,6 +15,11 @@ class ATextField extends StatefulWidget {
   final bool autofocus;
   final TextInputAction? textInputAction;
 
+  final TextStyle? style;
+  final TextAlign textAlign;
+  final int? maxLength;
+  final List<dynamic>? inputFormatters;
+
   const ATextField({
     super.key,
     this.label,
@@ -26,6 +32,10 @@ class ATextField extends StatefulWidget {
     this.onChanged,
     this.autofocus = false,
     this.textInputAction,
+    this.style,
+    this.textAlign = TextAlign.start,
+    this.maxLength,
+    this.inputFormatters,
   });
 
   @override
@@ -87,13 +97,17 @@ class _ATextFieldState extends State<ATextField> {
               textInputAction: widget.textInputAction,
               onChanged: widget.onChanged,
               cursorColor: AColors.primary,
-              style: GoogleFonts.outfit(
+              textAlign: widget.textAlign,
+              maxLength: widget.maxLength,
+              inputFormatters: widget.inputFormatters != null ? List<TextInputFormatter>.from(widget.inputFormatters!) : null,
+              style: widget.style ?? GoogleFonts.outfit(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: widget.hint,
+                counterText: "", // Hide character counter
                 hintStyle: GoogleFonts.outfit(
                   color: Colors.white.withValues(alpha: 0.25),
                   fontWeight: FontWeight.w400,

@@ -20,12 +20,16 @@ final playlistDetailProvider = FutureProvider.family<PlaylistModel, int>((ref, i
 });
 
 final suggestedSongsProvider = FutureProvider<List<SongModel>>((ref) async {
-  // Fetch all songs and take a random selection or just first 10
-  final supabase = Supabase.instance.client;
-  final res = await supabase.from('songs')
-      .select('id, title, artist, album, genre, duration_seconds, cover_url, audio_url, play_count')
-      .limit(10);
-  return (res as List).map((e) => SongModel.fromJson(e)).toList();
+  try {
+    final supabase = Supabase.instance.client;
+    final res = await supabase.from('songs')
+        .select('id, title, artist, album, genre, duration_seconds, cover_url, audio_url, play_count')
+        .limit(10);
+    return (res as List).map((e) => SongModel.fromJson(e)).toList();
+  } catch (e) {
+    // Return empty list instead of crashing if database access is restricted
+    return [];
+  }
 });
 
 final likedSongsProvider = FutureProvider.autoDispose<List<SongModel>>((ref) async {

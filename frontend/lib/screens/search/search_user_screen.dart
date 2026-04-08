@@ -27,11 +27,21 @@ class _SearchUserScreenState extends State<SearchUserScreen> {
     setState(() => _isLoading = true);
     try {
       final res = await _service.searchUsers(q);
-      setState(() => _results = res);
+      // Double safety: filter out any admin that might slip through
+      setState(() => _results = res.where((u) => u.role != 'admin').toList());
     } catch (e) {
       debugPrint('Search error: $e');
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  /// Mask internal role names — admins never visible, others shown generically
+  String _maskRole(String role) {
+    switch (role.toLowerCase()) {
+      case 'creator': return 'CREATOR';
+      case 'user': return 'MEMBER';
+      default: return 'MEMBER';
     }
   }
 
@@ -117,7 +127,7 @@ class _SearchUserScreenState extends State<SearchUserScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(user.username, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                    Text(user.role.toUpperCase(), style: GoogleFonts.outfit(fontSize: 10, color: Colors.white38, letterSpacing: 1)),
+                    Text(_maskRole(user.role), style: GoogleFonts.outfit(fontSize: 10, color: Colors.white38, letterSpacing: 1)),
                   ],
                 ),
               ),

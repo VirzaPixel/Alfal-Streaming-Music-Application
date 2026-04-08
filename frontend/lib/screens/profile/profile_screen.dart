@@ -13,6 +13,7 @@ import '../../models/user_model.dart';
 import '../../services/connection_service.dart';
 import '../../services/stats_service.dart';
 import '../../services/playlist_service.dart';
+import '../auth/login_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String? targetUserId; // NULL if viewing own profile
@@ -216,17 +217,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildCounterRow() => Row(
     mainAxisAlignment: MainAxisAlignment.spaceAround,
     children: [
-      _counterItem('Followers', _displayUser!.followerCount),
-      _counterItem('Following', _displayUser!.followingCount),
+      _counterItem('Followers', _displayUser!.followerCount, onTap: () => _showConnectionList('Followers')),
+      _counterItem('Following', _displayUser!.followingCount, onTap: () => _showConnectionList('Following')),
       _counterItem('Playlists', _playlists.length),
     ],
   );
 
-  Widget _counterItem(String label, int count) => Column(
-    children: [
-      Text(count.toString(), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
-      Text(label, style: GoogleFonts.outfit(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.bold)),
-    ],
+  Widget _counterItem(String label, int count, {VoidCallback? onTap}) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(12),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        children: [
+          Text(count.toString(), style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
+          Text(label, style: GoogleFonts.outfit(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    ),
   );
 
   Widget _buildStatsSection() {
@@ -356,16 +364,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   );
 
   // Existing methods (Edit, SignOut, etc.) preserved and adapted
+  void _showConnectionList(String type) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ConnectionListSheet(
+        userId: _displayUser!.id,
+        type: type,
+        onUpdate: () async {
+          // Update profile count after unfollow
+          final updatedUser = await _connectionService.getUserProfile(_displayUser!.id);
+          if (mounted) setState(() => _displayUser = updatedUser);
+        },
+      ),
+    );
+  }
+
   void _showSettings(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(context: context, isScrollControlled: true, useRootNavigator: true, backgroundColor: Colors.transparent, builder: (_) => const _SettingsSheet());
   }
 
-  void _showEditProfile(BuildContext context, WidgetRef ref, dynamic user) {
+  void _showEditProfile(BuildContext context, WidgetRef ref, UserModel? user) {
     showModalBottomSheet(context: context, isScrollControlled: true, useRootNavigator: true, backgroundColor: Colors.transparent, builder: (_) => _EditProfileSheet(user: user));
   }
 
   void _confirmSignOut(BuildContext context, WidgetRef ref) {
-    // Standard confirm signout...
     showDialog(
       context: context,
       barrierColor: Colors.black87,
@@ -386,9 +411,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   Expanded(child: TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white60)))),
                   const SizedBox(width: 12),
                   Expanded(child: ElevatedButton(onPressed: () async {
-                    ref.read(authProvider.notifier).logout();
-                    Navigator.of(context, rootNavigator: true).popUntil((r) => r.isFirst);
-                  }, style: ElevatedButton.styleFrom(backgroundColor: AColors.error), child: const Text('Sign Out'))),
+                    // Close the dialog first
+                    Navigator.of(context, rootNavigator: true).pop();
+                    // Perform logout
+                    await ref.read(authProvider.notifier).logout();
+                    // Navigate to LoginScreen, removing all routes
+                    if (context.mounted) {
+                      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    }
+                  }, style: ElevatedButton.styleFrom(backgroundColor: AColors.error), child: Text('Sign Out', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)))),
                 ],
               ),
             ],
@@ -508,6 +542,177 @@ class _IconAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.all(13), decoration: BoxDecoration(shape: BoxShape.circle, color: color ?? Colors.white.withOpacity(0.07)), child: Icon(icon, color: iconColor ?? Colors.white, size: 23)));
+  }
+}
+
+class _ConnectionListSheet extends ConsumerStatefulWidget {
+  final String userId;
+  final String type; // 'Followers' or 'Following'
+  final VoidCallback onUpdate;
+  const _ConnectionListSheet({required this.userId, required this.type, required this.onUpdate});
+
+  @override
+  ConsumerState<_ConnectionListSheet> createState() => _ConnectionListSheetState();
+}
+
+class _ConnectionListSheetState extends ConsumerState<_ConnectionListSheet> {
+  final _service = ConnectionService();
+  bool _isLoading = true;
+  List<UserModel> _users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      final res = widget.type == 'Followers' 
+          ? await _service.getFollowers(widget.userId) 
+          : await _service.getFollowing(widget.userId);
+      if (mounted) setState(() { _users = res; _isLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      padding: const EdgeInsets.all(28),
+      decoration: const BoxDecoration(color: AColors.surface, borderRadius: BorderRadius.vertical(top: Radius.circular(36))),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(widget.type.toUpperCase(), style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, color: Colors.white38)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          if (_isLoading)
+            const Expanded(child: Center(child: CircularProgressIndicator(color: AColors.primary)))
+          else if (_users.isEmpty)
+             Expanded(child: Center(child: Text('No users found', style: GoogleFonts.outfit(color: Colors.white24))))
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: _users.length,
+                itemBuilder: (ctx, i) => _buildUserTile(_users[i]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserTile(UserModel user) {
+    final currentUserId = ref.read(authProvider).user?.id;
+    final isMe = user.id == currentUserId;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) 
+                ? CachedNetworkImageProvider(user.avatarUrl!) : null,
+            child: (user.avatarUrl == null || user.avatarUrl!.isEmpty) ? const Icon(Icons.person, color: Colors.white24) : null,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(targetUserId: user.id)));
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.username, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(user.role.toUpperCase(), style: GoogleFonts.outfit(color: Colors.white38, fontSize: 10, letterSpacing: 1)),
+                ],
+              ),
+            ),
+          ),
+          if (!isMe && currentUserId != null)
+            _FollowActionButton(
+              targetUserId: user.id,
+              onStatusChange: widget.onUpdate,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FollowActionButton extends ConsumerStatefulWidget {
+  final String targetUserId;
+  final VoidCallback onStatusChange;
+  const _FollowActionButton({required this.targetUserId, required this.onStatusChange});
+
+  @override
+  ConsumerState<_FollowActionButton> createState() => _FollowActionButtonState();
+}
+
+class _FollowActionButtonState extends ConsumerState<_FollowActionButton> {
+  final _service = ConnectionService();
+  bool _isFollowing = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    final me = ref.read(authProvider).user?.id;
+    if (me == null) return;
+    final res = await _service.isFollowing(me, widget.targetUserId);
+    if (mounted) setState(() { _isFollowing = res; _isLoading = false; });
+  }
+
+  Future<void> _toggleAction() async {
+    final me = ref.read(authProvider).user?.id;
+    if (me == null) return;
+    setState(() => _isLoading = true);
+    try {
+      if (_isFollowing) {
+        await _service.unfollowUser(me, widget.targetUserId);
+      } else {
+        await _service.followUser(me, widget.targetUserId);
+      }
+      if (mounted) {
+        setState(() { _isFollowing = !_isFollowing; _isLoading = false; });
+        widget.onStatusChange();
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white24));
+    
+    return TextButton(
+      onPressed: _toggleAction,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        backgroundColor: _isFollowing ? Colors.white.withOpacity(0.06) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        _isFollowing ? 'Unfollow' : 'Follow', 
+        style: GoogleFonts.outfit(color: _isFollowing ? Colors.white70 : Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+      ),
+    );
   }
 }
 
