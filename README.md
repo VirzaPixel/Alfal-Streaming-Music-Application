@@ -2,8 +2,6 @@
 
 ALFAL is a high-end, serverless music streaming application built with **Flutter** and **Supabase**. It focuses on a premium user experience through modern design principles like **Glassmorphism**, **Dynamic Mesh Gradients**, and smooth **Micro-animations**.
 
-![ALFAL Preview](https://github.com/VirzaPixel/Alfal-Streaming-Music-Application/raw/main/preview.png)
-
 ## ✨ Key Features
 
 ### 💎 Premium Interface
