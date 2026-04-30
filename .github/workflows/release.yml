@@ -1,0 +1,45 @@
+name: Flutter Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: ./frontend
+
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: ./frontend
+
+      - name: Create Release & Upload APK
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "frontend/build/app/outputs/flutter-apk/Alfal-Application.apk"
+          tag: ${{ github.ref_name }}
+          name: "Alfal Release ${{ github.ref_name }}"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
