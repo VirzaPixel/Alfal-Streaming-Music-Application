@@ -53,7 +53,7 @@ jobs:
       - name: Create Release & Upload APK
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "frontend/build/app/outputs/flutter-apk/Alfal-Application.apk"
+          artifacts: "frontend/build/app/outputs/flutter-apk/*.apk"
           tag: ${{ github.ref_name }}
           name: "Alfal Release ${{ github.ref_name }}"
           allowUpdates: true
