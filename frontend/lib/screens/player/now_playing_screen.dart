@@ -8,7 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/theme.dart';
-import '../../providers/player_provider.dart';
+import '../../providers/player_provider.dart' hide RepeatMode;
+import '../../providers/player_provider.dart' as pp show RepeatMode;
 import '../../providers/playlist_provider.dart';
 import '../../widgets/song_options_sheet.dart';
 
@@ -232,10 +233,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                 size: 48, color: Colors.white),
                           ),
                           _SmallBtn(
-                              icon: player.repeatMode == RepeatMode.one
+                              icon: player.repeatMode == pp.RepeatMode.one
                                   ? Icons.repeat_one_rounded
                                   : Icons.repeat_rounded,
-                              active: player.repeatMode != RepeatMode.off,
+                              active: player.repeatMode != pp.RepeatMode.off,
                               onTap: notifier.toggleRepeat),
                         ],
                       ),

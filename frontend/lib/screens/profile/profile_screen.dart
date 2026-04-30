@@ -189,7 +189,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildAppBar(context, isOwnProfile),
-          SliverToBoxAdapter(child: _buildHeader(context, isOwnProfile, currentUser!)),
+          SliverToBoxAdapter(child: _buildHeader(context, isOwnProfile, currentUser)),
           if (_playlists.isNotEmpty) ...[
             _sectionTitle('Playlists', showSeeAll: _playlists.length > 4),
             _buildPlaylistsGrid(limit: 4),

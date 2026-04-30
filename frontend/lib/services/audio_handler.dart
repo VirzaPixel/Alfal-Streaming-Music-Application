@@ -14,7 +14,6 @@ class AlfalAudioHandler {
   final _queueController = StreamController<List<SongModel>>.broadcast();
   
   List<SongModel> _queue = [];
-  int _currentIndex = 0;
 
   Stream<SongModel?> get currentSongStream => _currentSongController.stream;
   Stream<bool> get isPlayingStream => _isPlayingController.stream;
@@ -40,7 +39,6 @@ class AlfalAudioHandler {
 
     _player.currentIndexStream.listen((index) {
       if (index != null && index >= 0 && index < _queue.length) {
-        _currentIndex = index;
         _currentSongController.add(_queue[index]);
       }
     });
@@ -50,7 +48,6 @@ class AlfalAudioHandler {
 
   Future<void> setSongs(List<SongModel> songs, {int initialIndex = 0}) async {
     _queue = songs;
-    _currentIndex = initialIndex;
     
     _queueController.add(_queue);
     if (_queue.isNotEmpty && initialIndex < _queue.length) {

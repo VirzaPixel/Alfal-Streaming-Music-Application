@@ -17,7 +17,6 @@ class MagicImportService {
   static const String _serverBase = 'https://alfal-music-agent.onrender.com';
   
   // Timeout lebih lama (2 menit) buat jaga-jaga kalau server Render lagi "bangun" dari tidur
-  final _timeout = const Duration(minutes: 2);
 
   // ── 1. CHECK SERVER ───────────────────────────────────────────────────
 
