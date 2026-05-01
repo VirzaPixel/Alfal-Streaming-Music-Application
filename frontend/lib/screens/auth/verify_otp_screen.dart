@@ -175,8 +175,12 @@ class _VerifyOTPScreenState extends ConsumerState<VerifyOTPScreen> with TickerPr
                       ),
                     ),
                               
-                                GestureDetector(
-                                  onTap: () => _focusNode.requestFocus(),
+                               GestureDetector(
+                                  onTap: () {
+                                    _focusNode.unfocus();
+                                    Future.delayed(50.ms, () => _focusNode.requestFocus());
+                                  },
+                                  behavior: HitTestBehavior.opaque,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [

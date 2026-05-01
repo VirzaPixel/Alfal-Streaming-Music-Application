@@ -146,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
 
                   const Spacer(flex: 2),
 
-                  _VisibleRameInput(
+                  _PixelInput(
                     label: 'Email',
                     controller: _emailCtrl,
                     hint: 'ENTER EMAIL...',
@@ -157,7 +157,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
 
                   const SizedBox(height: 32),
 
-                  _VisibleRameInput(
+                  _PixelInput(
                     label: 'Password',
                     controller: _passCtrl,
                     hint: 'ENTER PASSWORD...',
@@ -254,49 +254,65 @@ class _MiniVisualizer extends StatelessWidget {
   );
 }
 
-class _VisibleRameInput extends StatelessWidget {
+class _PixelInput extends StatelessWidget {
   final String label; final TextEditingController controller; final String hint; final IconData icon; final Color accentColor;
   final bool isPassword; final bool obscure; final VoidCallback? onToggleObscure; final TextInputType? keyboardType;
 
-  const _VisibleRameInput({required this.label, required this.controller, required this.hint, required this.icon, required this.accentColor, this.isPassword = false, this.obscure = false, this.onToggleObscure, this.keyboardType});
+  const _PixelInput({required this.label, required this.controller, required this.hint, required this.icon, required this.accentColor, this.isPassword = false, this.obscure = false, this.onToggleObscure, this.keyboardType});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          Container(width: 6, height: 6, color: accentColor),
-          const SizedBox(width: 8),
-          Text(label, style: GoogleFonts.silkscreen(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-          const Expanded(child: Divider(color: Colors.white10, indent: 10, thickness: 1)),
-        ]),
-        const SizedBox(height: 12),
-        AnimatedContainer(
-          duration: 250.ms,
-          decoration: BoxDecoration(color: _Y2K.surface, border: Border.all(color: accentColor, width: 2), boxShadow: [BoxShadow(color: accentColor, offset: const Offset(3, 3))]),
-          child: Row(children: [
-            const SizedBox(width: 16),
-            Icon(icon, color: accentColor, size: 20),
-            const SizedBox(width: 18),
-            Expanded(
-              child: TextField(
-                controller: controller, obscureText: obscure, keyboardType: keyboardType,
-                style: GoogleFonts.vt323(color: Colors.white, fontSize: 24, letterSpacing: 1.5, fontWeight: FontWeight.bold),
-                cursorColor: accentColor, cursorWidth: 3,
-                decoration: InputDecoration(
-                  hintText: hint,
-                  hintStyle: GoogleFonts.vt323(color: Colors.white10, fontSize: 20),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                  suffixIcon: isPassword ? GestureDetector(onTap: onToggleObscure, child: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: accentColor, size: 20)) : null,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: accentColor,
+          selectionColor: accentColor.withOpacity(0.3),
+          selectionHandleColor: accentColor,
+        ),
+        inputDecorationTheme: const InputDecorationTheme(
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          border: InputBorder.none,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Container(width: 6, height: 6, color: accentColor),
+            const SizedBox(width: 8),
+            Text(label, style: GoogleFonts.silkscreen(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            const Expanded(child: Divider(color: Colors.white10, indent: 10, thickness: 1)),
+          ]),
+          const SizedBox(height: 12),
+          AnimatedContainer(
+            duration: 250.ms,
+            decoration: BoxDecoration(color: _Y2K.surface, border: Border.all(color: accentColor, width: 2), boxShadow: [BoxShadow(color: accentColor, offset: const Offset(3, 3))]),
+            child: Row(children: [
+              const SizedBox(width: 16),
+              Icon(icon, color: accentColor, size: 20),
+              const SizedBox(width: 18),
+              Expanded(
+                child: TextField(
+                  controller: controller, obscureText: obscure, keyboardType: keyboardType,
+                  style: GoogleFonts.vt323(color: Colors.white, fontSize: 24, letterSpacing: 1.5, fontWeight: FontWeight.bold),
+                  cursorColor: accentColor, cursorWidth: 3,
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: GoogleFonts.vt323(color: Colors.white10, fontSize: 20),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    suffixIcon: isPassword ? GestureDetector(onTap: onToggleObscure, child: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: accentColor, size: 20)) : null,
+                  ),
                 ),
               ),
-            ),
-          ]),
-        ),
-      ],
+            ]),
+          ),
+        ],
+      ),
     );
   }
 }
