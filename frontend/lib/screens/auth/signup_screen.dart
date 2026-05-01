@@ -147,7 +147,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> with TickerProvider
                   _MiniMapDecoration().animate().fadeIn(delay: 150.ms).slideX(begin: 1, end: 0, curve: Curves.easeOut),
                 ]),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 _BrandedHeading(text: 'New Here ?')
                     .animate().fadeIn(delay: 200.ms, duration: 400.ms).slideX(begin: -0.2),
                 
@@ -155,54 +155,86 @@ class _SignupScreenState extends ConsumerState<SignupScreen> with TickerProvider
                 _DetailedProgress(progress: _progressCtrl, count: _filledCount)
                     .animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
 
-                const Spacer(flex: 2),
+                const SizedBox(height: 32),
                 
-                // Inputs (Optimized Spacing)
-                _VisibleRameInput(label: 'Username', controller: _userCtrl, hint: 'Tell Me Your Name...', accentColor: _Y2K.lime, icon: Icons.person_add)
-                    .animate().fadeIn(delay: 400.ms, duration: 400.ms).slideX(begin: 0.05),
-                const SizedBox(height: 32),
-                _VisibleRameInput(label: 'Email', controller: _emailCtrl, hint: 'Your Email pls...', accentColor: _Y2K.cyan, icon: Icons.mail_outline, keyboardType: TextInputType.emailAddress)
-                    .animate().fadeIn(delay: 500.ms, duration: 400.ms).slideX(begin: 0.05),
-                const SizedBox(height: 32),
-                _VisibleRameInput(label: 'Password', controller: _passCtrl, hint: 'Make It Strong yeah...', accentColor: _Y2K.pink, icon: Icons.lock_open, isPassword: true, obscure: _obscure, onToggleObscure: () => setState(() => _obscure = !_obscure))
-                    .animate().fadeIn(delay: 600.ms, duration: 400.ms).slideX(begin: 0.05),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _FieldLabel(text: 'USERNAME', color: _Y2K.lime),
+                        const SizedBox(height: 8),
+                        _PixelInput(
+                          controller: _userCtrl,
+                          hint: 'Tell Me Your Name...',
+                          icon: Icons.person_add_alt_1_rounded,
+                          color: _Y2K.lime,
+                        ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.05),
 
+                        const SizedBox(height: 24),
+                        _FieldLabel(text: 'EMAIL', color: _Y2K.cyan),
+                        const SizedBox(height: 8),
+                        _PixelInput(
+                          controller: _emailCtrl,
+                          hint: 'Your Email pls...',
+                          icon: Icons.email_outlined,
+                          color: _Y2K.cyan,
+                          keyboardType: TextInputType.emailAddress,
+                        ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.05),
 
-                const Spacer(flex: 3),
+                        const SizedBox(height: 24),
+                        _FieldLabel(text: 'PASSWORD', color: _Y2K.pink),
+                        const SizedBox(height: 8),
+                        _PixelInput(
+                          controller: _passCtrl,
+                          hint: 'Make It Strong y...',
+                          icon: Icons.lock_outline_rounded,
+                          color: _Y2K.pink,
+                          isPassword: true,
+                          obscure: _obscure,
+                          onToggleObscure: () => setState(() => _obscure = !_obscure),
+                        ).animate().fadeIn(delay: 600.ms).slideX(begin: 0.05),
+                        
+                        const SizedBox(height: 40),
+                        
+                        GestureDetector(
+                          onTapDown: (_) => setState(() => _btnPressed = true),
+                          onTapUp: (_) => setState(() => _btnPressed = false),
+                          onTapCancel: () => setState(() => _btnPressed = false),
+                          onTap: isLoading ? null : _register,
+                          child: AnimatedScale(
+                            scale: _btnPressed ? 0.96 : 1.0,
+                            duration: 100.ms,
+                            child: AnimatedContainer(
+                              duration: 150.ms,
+                              curve: Curves.easeOut,
+                              transform: Matrix4.translationValues(_btnPressed ? 3 : 0, _btnPressed ? 3 : 0, 0),
+                              height: 68, width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: _Y2K.pink,
+                                border: Border.all(color: Colors.white, width: 2.5),
+                                boxShadow: _btnPressed ? [] : const [
+                                  BoxShadow(color: _Y2K.cyan, offset: Offset(6, 6)),
+                                  BoxShadow(color: _Y2K.lime, offset: Offset(-2, -2)),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: isLoading
+                                  ? const CircularProgressIndicator(strokeWidth: 4, color: Colors.white)
+                                  : Text('CONTINUE', style: GoogleFonts.silkscreen(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white, letterSpacing: 2)),
+                            ),
+                          ),
+                        ).animate().fadeIn(delay: 750.ms, duration: 400.ms).scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack),
 
-                GestureDetector(
-                  onTapDown: (_) => setState(() => _btnPressed = true),
-                  onTapUp: (_) => setState(() => _btnPressed = false),
-                  onTapCancel: () => setState(() => _btnPressed = false),
-                  onTap: isLoading ? null : _register,
-                  child: AnimatedScale(
-                    scale: _btnPressed ? 0.96 : 1.0,
-                    duration: 100.ms,
-                    child: AnimatedContainer(
-                      duration: 150.ms,
-                      curve: Curves.easeOut,
-                      transform: Matrix4.translationValues(_btnPressed ? 3 : 0, _btnPressed ? 3 : 0, 0),
-                      height: 68, width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: _Y2K.pink,
-                        border: Border.all(color: Colors.white, width: 2.5),
-                        boxShadow: _btnPressed ? [] : const [
-                          BoxShadow(color: _Y2K.cyan, offset: Offset(6, 6)),
-                          BoxShadow(color: _Y2K.lime, offset: Offset(-2, -2)),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: isLoading
-                          ? const CircularProgressIndicator(strokeWidth: 4, color: Colors.white)
-                          : Text('Continue', style: GoogleFonts.silkscreen(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white, letterSpacing: 2)),
+                        const SizedBox(height: 32),
+                        Center(child: _PixelLink(label: 'RETURN_TO_LOGIN', target: null))
+                            .animate().fadeIn(delay: 900.ms),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
-                ).animate().fadeIn(delay: 750.ms, duration: 400.ms).scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack),
-
-                const SizedBox(height: 24),
-                Center(child: _PixelLink(label: 'RETURN_TO_LOGIN', target: null))
-                    .animate().fadeIn(delay: 900.ms),
-                const SizedBox(height: 12),
+                ),
               ],
             ),
           ),
@@ -226,6 +258,72 @@ class _BrandedHeading extends StatelessWidget {
   );
 }
 
+class _PixelInput extends StatelessWidget {
+  final TextEditingController controller; final String hint; final IconData icon; final Color color; 
+  final bool isPassword; final bool obscure; final VoidCallback? onToggleObscure; final TextInputType? keyboardType;
+  
+  const _PixelInput({
+    required this.controller, required this.hint, required this.icon, required this.color, 
+    this.isPassword = false, this.obscure = false, this.onToggleObscure, this.keyboardType,
+  });
+
+  @override
+  Widget build(BuildContext context) => Theme(
+    data: Theme.of(context).copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: color,
+        selectionColor: color.withOpacity(0.3),
+        selectionHandleColor: color,
+      ),
+      // Fix for the purple box/outline on some devices
+      inputDecorationTheme: const InputDecorationTheme(
+        focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        border: InputBorder.none,
+        errorBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+      ),
+    ),
+    child: Container(
+      height: 64,
+      decoration: BoxDecoration(
+        color: _Y2K.surface,
+        border: Border.all(color: color, width: 2),
+        boxShadow: [BoxShadow(color: color, offset: const Offset(4, 4))],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        keyboardType: keyboardType,
+        style: GoogleFonts.vt323(color: Colors.white, fontSize: 20, letterSpacing: 1),
+        cursorColor: color,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: color, size: 22),
+          hintText: hint,
+          hintStyle: GoogleFonts.vt323(color: Colors.white.withOpacity(0.15), fontSize: 20),
+          border: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          suffixIcon: isPassword ? GestureDetector(onTap: onToggleObscure, child: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: color, size: 20)) : null,
+        ),
+      ),
+    ),
+  );
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text; final Color color;
+  const _FieldLabel({required this.text, required this.color});
+  @override
+  Widget build(BuildContext context) => Row(children: [
+    Container(width: 6, height: 6, color: color),
+    const SizedBox(width: 8),
+    Text(text, style: GoogleFonts.silkscreen(color: color, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+    const Expanded(child: Divider(color: _Y2K.white10, indent: 10, thickness: 1)),
+  ]);
+}
+
 class _DetailedProgress extends StatelessWidget {
   final AnimationController progress; final int count;
   const _DetailedProgress({required this.progress, required this.count});
@@ -246,52 +344,6 @@ class _DetailedProgress extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _VisibleRameInput extends StatelessWidget {
-  final String label; final TextEditingController controller; final String hint; final IconData icon; final Color accentColor;
-  final bool isPassword; final bool obscure; final VoidCallback? onToggleObscure; final TextInputType? keyboardType;
-  const _VisibleRameInput({required this.label, required this.controller, required this.hint, required this.icon, required this.accentColor, this.isPassword = false, this.obscure = false, this.onToggleObscure, this.keyboardType});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          Container(width: 6, height: 6, color: accentColor),
-          const SizedBox(width: 8),
-          Text(label, style: GoogleFonts.silkscreen(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-          const Expanded(child: Divider(color: _Y2K.white10, indent: 10, thickness: 1)),
-        ]),
-        const SizedBox(height: 12),
-        AnimatedContainer(
-          duration: 250.ms,
-          decoration: BoxDecoration(color: _Y2K.surface, border: Border.all(color: accentColor, width: 2), boxShadow: [BoxShadow(color: accentColor, offset: const Offset(3, 3))]),
-          child: Row(children: [
-            const SizedBox(width: 16),
-            Icon(icon, color: accentColor, size: 20),
-            const SizedBox(width: 18),
-            Expanded(
-              child: TextField(
-                controller: controller, obscureText: obscure, keyboardType: keyboardType,
-                style: GoogleFonts.vt323(color: Colors.white, fontSize: 24, letterSpacing: 1.5, fontWeight: FontWeight.bold),
-                cursorColor: accentColor, cursorWidth: 3,
-                decoration: InputDecoration(
-                  hintText: hint,
-                  hintStyle: GoogleFonts.vt323(color: _Y2K.white10, fontSize: 22),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                  suffixIcon: isPassword ? GestureDetector(onTap: onToggleObscure, child: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: accentColor, size: 20)) : null,
-                ),
-              ),
-            ),
-          ]),
-        ),
-      ],
-    );
-  }
 }
 
 class _PixelToast {

@@ -147,46 +147,56 @@ class _VerifyOTPScreenState extends ConsumerState<VerifyOTPScreen> with TickerPr
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Opacity(
-                                opacity: 0,
-                                child: SizedBox(
-                                  width: 1, height: 1,
-                                  child: TextField(
-                                    controller: _otpCtrl,
-                                    focusNode: _focusNode,
-                                    keyboardType: TextInputType.number,
-                                    maxLength: 8,
-                                    autofocus: true,
-                                    onChanged: (val) {
-                                      if (val.length == 8) _verify();
-                                      setState(() {});
-                                    },
+                    // The actual hidden TextField
+                    Opacity(
+                      opacity: 0,
+                      child: SizedBox(
+                        width: 1, height: 1,
+                        child: Theme(
+                          data: Theme.of(context).copyWith(
+                            textSelectionTheme: const TextSelectionThemeData(
+                              selectionColor: Colors.transparent,
+                              cursorColor: Colors.transparent,
+                              selectionHandleColor: Colors.transparent,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _otpCtrl,
+                            focusNode: _focusNode,
+                            keyboardType: TextInputType.number,
+                            maxLength: 8,
+                            autofocus: true,
+                            onChanged: (val) {
+                              if (val.length == 8) _verify();
+                              setState(() {}); // Rebuild to update boxes
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                              
+                                GestureDetector(
+                                  onTap: () => _focusNode.requestFocus(),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ...List.generate(4, (i) => _VisualOTPBox(
+                                        digit: _otpCtrl.text.length > i ? _otpCtrl.text[i] : '',
+                                        isFocused: _otpCtrl.text.length == i && _focusNode.hasFocus,
+                                        cursorAnim: _cursorCtrl,
+                                      )),
+                                      Container(margin: const EdgeInsets.symmetric(horizontal: 6), width: 8, height: 2, color: _Y2K.cyan.withOpacity(0.3)),
+                                      ...List.generate(4, (i) {
+                                        final idx = i + 4;
+                                        return _VisualOTPBox(
+                                          digit: _otpCtrl.text.length > idx ? _otpCtrl.text[idx] : '',
+                                          isFocused: _otpCtrl.text.length == idx && _focusNode.hasFocus,
+                                          cursorAnim: _cursorCtrl,
+                                        );
+                                      }),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              
-                              GestureDetector(
-                                onTap: () => _focusNode.requestFocus(),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ...List.generate(4, (i) => _VisualOTPBox(
-                                      digit: _otpCtrl.text.length > i ? _otpCtrl.text[i] : '',
-                                      isFocused: _otpCtrl.text.length == i && _focusNode.hasFocus,
-                                      cursorAnim: _cursorCtrl,
-                                    )),
-                                    Container(margin: const EdgeInsets.symmetric(horizontal: 8), width: 10, height: 2, color: _Y2K.cyan.withOpacity(0.3)),
-                                    ...List.generate(4, (i) {
-                                      final idx = i + 4;
-                                      return _VisualOTPBox(
-                                        digit: _otpCtrl.text.length > idx ? _otpCtrl.text[idx] : '',
-                                        isFocused: _otpCtrl.text.length == idx && _focusNode.hasFocus,
-                                        cursorAnim: _cursorCtrl,
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
                         ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.9, 0.9)),
@@ -244,7 +254,13 @@ class _BrandedHeading extends StatelessWidget {
     children: [
       Container(width: 6, height: 32, color: _Y2K.cyan),
       const SizedBox(width: 12),
-      Expanded(child: Text(text, style: GoogleFonts.silkscreen(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2))),
+      Expanded(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(text.toUpperCase(), style: GoogleFonts.silkscreen(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2)),
+        ),
+      ),
     ],
   );
 }
@@ -256,13 +272,13 @@ class _VisualOTPBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 36, height: 52,
-      margin: const EdgeInsets.symmetric(horizontal: 3),
+      width: 34, height: 48,
+      margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         color: _Y2K.surface, 
         border: Border.all(color: isFocused ? _Y2K.lime : _Y2K.cyan.withOpacity(0.5), width: 2), 
         boxShadow: [
-          if (isFocused) const BoxShadow(color: _Y2K.lime, offset: Offset(3, 3))
+          if (isFocused) const BoxShadow(color: _Y2K.lime, offset: Offset(2, 2))
           else BoxShadow(color: _Y2K.cyan.withOpacity(0.2), offset: const Offset(2, 2))
         ],
       ),

@@ -31,11 +31,13 @@ void main() async {
       debugPrint('Warning: Supabase credentials not found');
     }
 
-    // Lock to portrait orientation
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+    // Allow all orientations (especially for tablets)
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
 
   // Set system UI overlay style (dark icons on status bar for dark theme)
   SystemChrome.setSystemUIOverlayStyle(
