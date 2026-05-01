@@ -124,17 +124,17 @@ class ATheme {
         filled: true,
         fillColor: AColors.surface,
         hintStyle: GoogleFonts.outfit(color: AColors.textHint, fontSize: 15),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide.none,
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AColors.primary, width: 2),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: AColors.primary, width: 2),
         ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AColors.divider, width: 1),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(24),
+          borderSide: const BorderSide(color: AColors.divider, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 24,
@@ -146,8 +146,8 @@ class ATheme {
           backgroundColor: AColors.primary,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 60),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
           textStyle: GoogleFonts.outfit(
             fontSize: 17,
@@ -163,9 +163,9 @@ class ATheme {
         color: AColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.zero,
-          side: BorderSide(color: AColors.divider, width: 1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: AColors.divider, width: 1),
         ),
       ),
       dividerColor: AColors.divider,

@@ -23,7 +23,7 @@ class PlaylistService {
   Future<List<Map<String, dynamic>>> getUserPlaylists(String userId) async {
     final res = await _supabase
         .from('playlists')
-        .select('id, name, cover_url')
+        .select('id, name, cover_url, playlist_songs(song_id)')
         .eq('user_id', userId)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(res);

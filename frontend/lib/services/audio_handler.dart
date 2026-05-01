@@ -33,8 +33,14 @@ class AlfalAudioHandler {
   }
 
   void _listenToPlayerChanges() {
-    _player.playingStream.listen((playing) {
-      _isPlayingController.add(playing);
+    _player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed) {
+        _isPlayingController.add(false);
+        _player.pause();
+        _player.seek(Duration.zero);
+      } else {
+        _isPlayingController.add(state.playing);
+      }
     });
 
     _player.currentIndexStream.listen((index) {

@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,7 +17,6 @@ import '../../widgets/top_navbar.dart';
 import '../../widgets/glass_container.dart';
 import '../../models/user_model.dart';
 import '../../widgets/song_options_sheet.dart';
-import '../profile/profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -68,81 +69,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // ── Personalized Greeting ──
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 40, 28, 10),
+            padding: const EdgeInsets.fromLTRB(28, 20, 24, 24),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    );
-                  },
+                Hero(
+                  tag: 'home_avatar',
                   child: Container(
-                    width: 58,
-                    height: 58,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AColors.primary.withOpacity(0.9),
-                          AColors.accent.withOpacity(0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.5), width: 2),
                       boxShadow: [
-                        BoxShadow(
-                          color: AColors.primary.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
+                        BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.3), blurRadius: 20),
                       ],
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
                     ),
-                    child: (user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty)
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: CachedNetworkImage(
+                    child: ClipOval(
+                      child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                          ? CachedNetworkImage(
                               imageUrl: user.avatarUrl!,
                               fit: BoxFit.cover,
+                            )
+                          : Container(
+                              color: const Color(0xFF00E5FF).withOpacity(0.1),
+                              child: const Icon(Icons.person_rounded, color: Color(0xFF00E5FF)),
                             ),
-                          )
-                        : Center(
-                            child: Icon(
-                              Icons.person_rounded,
-                              color: Colors.white.withOpacity(0.9),
-                              size: 30,
-                            ),
-                          ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'DASHBOARD',
+                        'Listen your way to happiness.',
                         style: GoogleFonts.outfit(
-                          color: AColors.primaryLight,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 4,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Welcome Home',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white.withOpacity(0.95),
+                          letterSpacing: -0.8,
+                          height: 1.2,
                         ),
                       ),
                     ],
@@ -186,7 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // ── Suggested For You ──
         SliverToBoxAdapter(
           child: _HomeSection(
-            title: 'Suggested For You',
+            title: 'Random Songs Everyminutes',
             onSeeAll: null,
             child: suggestedAsync.when(
               loading: () => const _HorizontalLoading(),
@@ -211,25 +179,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             title: 'Your Playlists',
             onSeeAll: null,
             child: playlistsAsync.when(
-              data: (playlists) => playlists.isEmpty
-                  ? _EmptyPlaylists()
-                  : SizedBox(
-                      height: 230,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        itemCount: playlists.length,
-                        itemBuilder: (context, i) => _PlaylistCard(playlist: playlists[i]),
-                      ),
-                    ),
+              data: (playlists) {
+                if (playlists.isEmpty) return _EmptyPlaylists();
+                final displayPlaylists = playlists.take(5).toList();
+                return SizedBox(
+                  height: 230,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: displayPlaylists.length + 1,
+                    itemBuilder: (context, i) {
+                      if (i == displayPlaylists.length) {
+                        return const _ExplorePlaylistCard();
+                      }
+                      return _PlaylistCard(playlist: displayPlaylists[i]);
+                    },
+                  ),
+                );
+              },
               loading: () => const _HorizontalLoading(),
               error: (_, __) => const SizedBox.shrink(),
             ),
           ),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 140)),
+        const SliverToBoxAdapter(child: SizedBox(height: 240)),
       ],
     );
   }
@@ -295,12 +270,25 @@ class _QuickAccessTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AGlass(
-      opacity: 0.08,
-      blur: 15,
-      borderRadius: BorderRadius.circular(12),
-      padding: EdgeInsets.zero,
-      child: InkWell(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withOpacity(0.03),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        boxShadow: [
+          if (color != null)
+            BoxShadow(
+              color: color!.withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -351,6 +339,8 @@ class _QuickAccessTile extends StatelessWidget {
             ],
           ),
         ),
+          ),
+        ),
       ),
     );
   }
@@ -377,17 +367,18 @@ class _SuggestedSongCard extends ConsumerWidget {
                 Container(
                   height: 120,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(4, 6),
+                        color: Colors.black.withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     child: CachedNetworkImage(
                       imageUrl: song.coverUrl,
                       fit: BoxFit.cover,
@@ -427,9 +418,10 @@ class _SuggestedSongCard extends ConsumerWidget {
                   ),
                 ),
                 Positioned(
-                  top: 8, right: 8,
-                  child: GestureDetector(
-                    onTap: () {
+                  top: 0, right: 0,
+                  child: IconButton(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
                       showModalBottomSheet(
                         context: context,
                         useRootNavigator: true,
@@ -438,13 +430,13 @@ class _SuggestedSongCard extends ConsumerWidget {
                         builder: (_) => SongOptionsSheet(song: song),
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withOpacity(0.5),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 18),
+                      child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
                     ),
                   ),
                 ),
@@ -559,11 +551,12 @@ class _PlaylistCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 12,
-                      offset: const Offset(4, 8),
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 25,
+                      offset: const Offset(0, 12),
                     ),
                   ],
                 ),
@@ -637,6 +630,80 @@ class _PlaylistCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 '${playlist.songs?.length ?? 0} songs',
+                style: GoogleFonts.outfit(
+                    color: Colors.white24,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  class _ExplorePlaylistCard extends StatelessWidget {
+    const _ExplorePlaylistCard();
+
+    @override
+    Widget build(BuildContext context) {
+      return GestureDetector(
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Explore Playlists coming soon!')),
+          );
+        },
+        child: Container(
+          width: 160,
+          margin: const EdgeInsets.only(right: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00E5FF).withOpacity(0.1),
+                      blurRadius: 25,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E5FF).withOpacity(0.05),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.explore_rounded,
+                          color: Color(0xFF00E5FF),
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Explore More',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    color: const Color(0xFF00E5FF),
+                    letterSpacing: -0.5),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Discover new sounds',
                 style: GoogleFonts.outfit(
                     color: Colors.white24,
                     fontSize: 13,

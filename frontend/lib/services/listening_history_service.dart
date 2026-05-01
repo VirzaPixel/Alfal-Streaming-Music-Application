@@ -20,7 +20,8 @@ class ListeningHistoryNotifier extends StateNotifier<List<SongModel>> {
       final data = prefs.getString(_key);
       if (data != null) {
         final List decoded = json.decode(data);
-        state = decoded.map((e) => SongModel.fromMap(e)).toList();
+        final list = decoded.map((e) => SongModel.fromMap(e)).toList();
+        state = list.take(20).toList(); // Ensure limit even on load
       }
     } catch (_) {}
   }
@@ -30,12 +31,8 @@ class ListeningHistoryNotifier extends StateNotifier<List<SongModel>> {
     final newList = state.where((s) => s.id != song.id).toList();
     newList.insert(0, song);
     
-    // Keep last 20
-    if (newList.length > 20) {
-      newList.removeLast();
-    }
-
-    state = newList;
+    // Strictly keep only the latest 20
+    state = newList.take(20).toList();
     _saveHistory();
   }
 

@@ -73,7 +73,7 @@ class _ATextFieldState extends State<ATextField> {
               color: _isFocused 
                   ? const Color(0xFF121220) 
                   : const Color(0xFF0A0A0F),
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(24),
               // Floating border effect
               border: Border.all(
                 color: _isFocused 

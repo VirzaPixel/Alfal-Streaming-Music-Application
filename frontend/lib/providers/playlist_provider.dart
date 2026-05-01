@@ -20,7 +20,7 @@ final playlistDetailProvider = FutureProvider.family<PlaylistModel, int>((ref, i
 
 // Timer provider that updates every 1 minute to refresh suggested songs
 final _suggestedSongsTimerProvider = StreamProvider<void>((ref) {
-  return Stream.periodic(const Duration(minutes: 1));
+  return Stream.periodic(const Duration(minutes: 3));
 });
 
 final suggestedSongsProvider = FutureProvider<List<SongModel>>((ref) async {

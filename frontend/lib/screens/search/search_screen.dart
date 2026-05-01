@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import '../../widgets/a_text_field.dart';
 import '../../widgets/song_options_sheet.dart';
 import '../../widgets/song_tile.dart';
 import '../../widgets/top_navbar.dart';
+import '../../widgets/top_notification.dart';
 
 import '../profile/profile_screen.dart';
 
@@ -112,7 +114,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           return ListView.builder(
                                   physics: const BouncingScrollPhysics(),
                                   padding:
-                                      const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                                      const EdgeInsets.fromLTRB(16, 8, 16, 240),
                                   itemCount: results.length,
                                   itemBuilder: (_, i) {
                                     final item = results[i];
@@ -146,11 +148,40 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget _buildInitialState(List<SongModel> recentSongs, bool canUpload) {
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 130),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 240),
       children: [
+        // ── Explore Moods (New Interactive Section) ──
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20, top: 8),
+          child: Text(
+            'Explore Moods',
+            style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5),
+          ),
+        ),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 1.6,
+          children: [
+            _MoodCard(label: 'Chill', color: Colors.blueAccent, icon: Icons.waves_rounded),
+            _MoodCard(label: 'Energy', color: Colors.orangeAccent, icon: Icons.bolt_rounded),
+            _MoodCard(label: 'Focus', color: Colors.tealAccent, icon: Icons.center_focus_strong_rounded),
+            _MoodCard(label: 'Party', color: Colors.purpleAccent, icon: Icons.celebration_rounded),
+          ],
+        ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
+
+        const SizedBox(height: 32),
+
         if (recentSongs.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 16, top: 8),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -179,9 +210,84 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 queue: recentSongs,
               ).animate().fadeIn(delay: (entry.key * 30).ms).slideX(begin: 0.04, end: 0);
           }),
-          const SizedBox(height: 32),
         ],
       ],
+    );
+  }
+}
+
+class _MoodCard extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+  const _MoodCard({required this.label, required this.color, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        TopNotification.show(context, '$label mood is an upcoming feature! Stay tuned.', color: color);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withOpacity(0.4),
+              color.withOpacity(0.1),
+            ],
+          ),
+          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -15,
+                bottom: -15,
+                child: Transform.rotate(
+                  angle: 0.2,
+                  child: Icon(
+                    icon,
+                    size: 80,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: Colors.white, size: 24),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -8,8 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../config/theme.dart';
 import '../models/song_model.dart';
 import '../providers/player_provider.dart';
-import '../providers/playlist_provider.dart';
-import '../widgets/song_options_sheet.dart';
+import 'song_options_sheet.dart';
 
 class SongTile extends ConsumerWidget {
   final SongModel song;
@@ -27,166 +26,155 @@ class SongTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final player = ref.watch(playerProvider);
-    final isActive = player.currentSong?.id == song.id;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            ref
-                .read(playerProvider.notifier)
-                .playSong(song, queue: queue, sourceName: sourceName);
-          },
-          borderRadius: BorderRadius.circular(24),
-          child: AnimatedContainer(
-            duration: 400.ms,
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: isActive
-                  ? AColors.primary.withOpacity(0.08)
-                  : AColors.glassSurface,
-              border: Border.all(
+    // Optimization: Only rebuild if THIS song's active state changes
+    final isActive = ref.watch(playerProvider.select((p) => p.currentSong?.id == song.id));
+    final isPlaying = ref.watch(playerProvider.select((p) => p.isPlaying));
+    
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref
+                  .read(playerProvider.notifier)
+                  .playSong(song, queue: queue, sourceName: sourceName);
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: AnimatedContainer(
+              duration: 400.ms,
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
                 color: isActive
-                    ? AColors.primary.withOpacity(0.4)
-                    : AColors.glassBorder,
-                width: 1,
+                    ? AColors.primary.withOpacity(0.08)
+                    : AColors.glassSurface,
+                border: Border.all(
+                  color: isActive
+                      ? AColors.primary.withOpacity(0.4)
+                      : AColors.glassBorder,
+                  width: 1,
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                            color: AColors.primary.withOpacity(0.15),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8))
+                      ]
+                    : [],
               ),
-              boxShadow: isActive
-                  ? [
-                      BoxShadow(
-                          color: AColors.primary.withOpacity(0.15),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8))
-                    ]
-                  : [],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: CachedNetworkImage(
-                      imageUrl: song.coverUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, __, ___) => const _Placeholder(),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CachedNetworkImage(
+                        imageUrl: song.coverUrl,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 150,
+                        memCacheHeight: 150,
+                        placeholder: (context, url) => Container(color: AColors.surfaceAlt),
+                        errorWidget: (_, __, ___) => const _Placeholder(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        song.title,
-                        style: GoogleFonts.outfit(
-                          color: isActive ? Colors.white : AColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 17, // Sharper and slightly bigger
-                          letterSpacing: -0.4,
+                  const SizedBox(width: 16),
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: isActive ? FontWeight.w800 : FontWeight.w700,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        song.artist,
-                        style: GoogleFonts.outfit(
-                          color: isActive
-                              ? AColors.primaryLight.withOpacity(0.9)
-                              : AColors.textSec,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(height: 2),
+                        Text(
+                          song.artist,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: isActive
+                                ? AColors.primaryLight.withOpacity(0.8)
+                                : Colors.white38,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                // Active Indicator or Duration
-                if (isActive)
-                  _AnimatedEqualizer(isPlaying: player.isPlaying)
-                else
-                  Text(
-                    song.durationLabel,
-                    style: GoogleFonts.outfit(
-                      color: AColors.textHint,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      ],
                     ),
                   ),
-
-                // Like
-                Consumer(builder: (context, ref, _) {
-                    final liked = ref.watch(isLikedProvider(song.id));
-                    return IconButton(
-                      icon: Icon(
-                        liked
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        color: liked ? Colors.redAccent : AColors.textHint,
+                  if (isActive)
+                    _AnimatedEqualizer(isPlaying: isPlaying)
+                  else
+                    Text(
+                      song.durationLabel,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white24,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
-                      onPressed: () async {
-                        HapticFeedback.mediumImpact();
-                        if (liked) {
-                          await ref
-                              .read(playlistServiceProvider)
-                              .unlikeSong(song.id);
-                        } else {
-                          await ref
-                              .read(playlistServiceProvider)
-                              .likeSong(song.id);
-                        }
-                        ref.invalidate(likedSongsProvider);
-                        ref.invalidate(profileStatsProvider);
-                      },
-                      iconSize: 20,
-                    );
-                  }),
-
-                // Options (Always Show)
-                IconButton(
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    if (onMoreTap != null) {
-                      onMoreTap!();
-                    } else {
-                      showModalBottomSheet(
-                        context: context,
-                        useRootNavigator: true,
-                        backgroundColor: Colors.transparent,
-                        isScrollControlled: true,
-                        builder: (_) => SongOptionsSheet(song: song),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.more_vert_rounded),
-                  color: AColors.textHint,
-                  iconSize: 20,
-                ),
-              ],
+                    ),
+                  
+                  const SizedBox(width: 8),
+                  
+                  // More Button
+                  _MoreButton(song: song),
+                ],
+              ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreButton extends StatelessWidget {
+  final SongModel song;
+  const _MoreButton({required this.song});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            useRootNavigator: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => SongOptionsSheet(song: song),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: const Padding(
+          padding: EdgeInsets.all(12),
+          child: Icon(Icons.more_vert_rounded, color: Colors.white38, size: 20),
         ),
       ),
     );
@@ -198,23 +186,8 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.03),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.music_note_rounded,
-          color: Colors.white.withOpacity(0.15),
-          size: 24,
-        ),
-      ),
+      color: Colors.white.withOpacity(0.05),
+      child: const Icon(Icons.music_note_rounded, color: Colors.white24),
     );
   }
 }
@@ -225,35 +198,25 @@ class _AnimatedEqualizer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 24,
-      width: 24,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AColors.primary.withOpacity(0.1),
-        shape: BoxShape.circle,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(3, (i) {
-          return Container(
-            width: 3,
-            height: 12,
-            decoration: BoxDecoration(
-              gradient: AColors.primaryGradient,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          )
-              .animate(
-                  onPlay: (c) => isPlaying ? c.repeat(reverse: true) : c.stop())
-              .scaleY(
-                  begin: 0.2,
-                  end: 1.0,
-                  duration: (400 + (i * 200)).ms,
-                  curve: Curves.easeInOut);
-        }),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Container(
+          width: 3,
+          height: 12,
+          margin: const EdgeInsets.only(left: 2),
+          decoration: BoxDecoration(
+            color: AColors.primaryLight,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ).animate(onPlay: (c) => c.repeat(reverse: true))
+         .scaleY(
+           begin: 0.3,
+           end: 1.0,
+           duration: Duration(milliseconds: 400 + (index * 150)),
+           curve: Curves.easeInOut,
+         );
+      }),
     );
   }
 }

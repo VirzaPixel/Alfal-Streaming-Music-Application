@@ -164,18 +164,6 @@ class SongOptionsSheet extends ConsumerWidget {
                 ref.invalidate(profileStatsProvider);
               },
             ),
-
-          _OptionItem(
-            icon: Icons.person_outline_rounded,
-            label: 'Go to Artist Profile',
-            onTap: () => Navigator.pop(context),
-          ),
-
-          _OptionItem(
-            icon: Icons.share_rounded,
-            label: 'Share Song',
-            onTap: () => Navigator.pop(context),
-          ),
         ],
       ),
     );
@@ -319,6 +307,7 @@ class _PlaylistPickerSheet extends ConsumerWidget {
                                 await ref
                                     .read(playlistServiceProvider)
                                     .addSong(p.id, song.id);
+                                ref.invalidate(playlistDetailProvider(p.id)); // Force update detail view
                                 ref.invalidate(playlistsProvider);
                                 ref.invalidate(profileStatsProvider);
                               } catch (e) {

@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -10,7 +12,6 @@ import '../../widgets/a_text_field.dart';
 import 'liked_songs_screen.dart';
 import 'playlist_detail_screen.dart';
 import '../../widgets/top_navbar.dart';
-import '../../widgets/glass_container.dart';
 
 class PlaylistScreen extends ConsumerWidget {
   const PlaylistScreen({super.key});
@@ -47,39 +48,36 @@ class PlaylistScreen extends ConsumerWidget {
     return CustomScrollView(
       physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
-        // ── Modern Header ──
+        // ── Immersive Header ──
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 20, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${ref.watch(authProvider).user?.username ?? 'Your'} Library',
+                      'Your ',
                       style: GoogleFonts.outfit(
-                        fontSize: 34,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white70,
+                        letterSpacing: -0.5,
+                      ),
+                    ).animate().fadeIn(duration: 400.ms),
+                    Text(
+                      'Library',
+                      style: GoogleFonts.outfit(
+                        fontSize: 32,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
-                        letterSpacing: -1.2,
+                        letterSpacing: -1.0,
                       ),
-                    ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05, end: 0),
-                    const Spacer(),
-                    _CircularPlusButton(
-                      onTap: () => _showCreateDialog(context, ref),
-                    ).animate().fadeIn(delay: 100.ms).scale(),
+                    ).animate().fadeIn(delay: 100.ms).slideX(begin: -0.1, end: 0),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Explore your collection and favorites',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white24,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ).animate().fadeIn(delay: 200.ms),
               ],
             ),
           ),
@@ -89,55 +87,44 @@ class PlaylistScreen extends ConsumerWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _FeaturedLibraryTile(
-                    title: 'Liked Songs',
-                    subtitle: 'Your absolute favorites',
-                    icon: Icons.favorite_rounded,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF8B5CF6), Color(0xFFC026D3)],
-                    ),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LikedSongsScreen())),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _FeaturedLibraryTile(
-                    title: 'New Mixes',
-                    subtitle: 'Updated daily for you',
-                    icon: Icons.auto_awesome_rounded,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF059669)],
-                    ),
-                    onTap: () {}, // Future feature
-                  ),
-                ),
-              ],
+            child: _FeaturedLibraryTile(
+              title: 'Liked Songs',
+              subtitle: 'Your Ephemeral Songs',
+              icon: Icons.favorite_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF8B5CF6), Color(0xFFC026D3)],
+              ),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LikedSongsScreen())),
             ),
           ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 48)),
-
-        // ── Grid representation for Playlists (Better than plain list) ──
+        // ── Grid Header ──
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'ALL PLAYLISTS',
-                  style: GoogleFonts.outfit(
-                    fontSize: 11, 
-                    fontWeight: FontWeight.w900, 
-                    color: AColors.primaryLight,
-                    letterSpacing: 3,
+                Container(
+                  width: 3,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AColors.primary,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                Icon(Icons.sort_rounded, color: Colors.white24, size: 18),
+                const SizedBox(width: 12),
+                Text(
+                  'PLAYLISTS',
+                  style: GoogleFonts.outfit(
+                    fontSize: 13, 
+                    fontWeight: FontWeight.w900, 
+                    color: Colors.white54,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const Spacer(),
+                Icon(Icons.sort_rounded, color: Colors.white24, size: 20),
               ],
             ),
           ).animate().fadeIn(delay: 350.ms),
@@ -164,7 +151,7 @@ class PlaylistScreen extends ConsumerWidget {
             if (playlists.isEmpty) return SliverToBoxAdapter(child: _EmptyLibraryState());
             
             return SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 180),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 240),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -173,15 +160,23 @@ class PlaylistScreen extends ConsumerWidget {
                   childAspectRatio: 0.85,
                 ),
                 delegate: SliverChildBuilderDelegate(
-                  (context, i) => _PlaylistGridItem(
-                    playlist: playlists[i],
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: playlists[i].id)),
-                    ),
-                    onDelete: () => _confirmDelete(context, ref, playlists[i]),
-                  ),
-                  childCount: playlists.length,
+                  (context, i) {
+                    if (i == 0) {
+                      return _CreatePlaylistCard(
+                        onTap: () => _showCreateDialog(context, ref),
+                      );
+                    }
+                    final playlist = playlists[i - 1];
+                    return _PlaylistGridItem(
+                      playlist: playlist,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: playlist.id)),
+                      ),
+                      onDelete: () => _confirmDelete(context, ref, playlist),
+                    );
+                  },
+                  childCount: playlists.length + 1,
                 ),
               ),
             );
@@ -233,34 +228,78 @@ class _FeaturedLibraryTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        height: 115,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: (gradient as LinearGradient).colors.first.withOpacity(0.15),
+              blurRadius: 30,
+              spreadRadius: -5,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: (gradient as LinearGradient).colors.first.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
+                borderRadius: BorderRadius.circular(32), // Fixed missing border radius!
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.08),
+                    Colors.white.withOpacity(0.02),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (gradient as LinearGradient).colors.first.withOpacity(0.5),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5)),
+                        const SizedBox(height: 4),
+                        Text(subtitle, style: GoogleFonts.outfit(color: const Color(0xFF00E5FF).withOpacity(0.8), fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
                   ),
                 ],
               ),
-              child: Icon(icon, color: Colors.white, size: 24),
             ),
-            const SizedBox(height: 16),
-            Text(title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-            Text(subtitle, style: GoogleFonts.outfit(color: Colors.white24, fontSize: 11, fontWeight: FontWeight.w600)),
-          ],
+          ),
         ),
       ),
     );
@@ -283,90 +322,141 @@ class _PlaylistGridItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onDelete,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                color: Colors.white.withOpacity(0.05),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 12, offset: const Offset(0, 6)),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Hero(
-                      tag: 'playlist_cover_${playlist.id}',
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: playlist.coverUrl != null
-                            ? Image.network(playlist.coverUrl, fit: BoxFit.cover)
-                            : Container(
-                                color: Colors.white.withOpacity(0.02),
-                                child: Icon(Icons.playlist_play_rounded, color: Colors.white10, size: 48),
-                              ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 12, right: 12,
-                    child: AGlass(
-                      opacity: 0.2,
-                      blur: 10,
-                      padding: const EdgeInsets.all(6),
-                      borderRadius: BorderRadius.circular(10),
-                      child: Icon(Icons.more_horiz_rounded, color: Colors.white, size: 18),
-                    ),
-                  ),
-                ],
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.02),
+          borderRadius: BorderRadius.circular(24), // Tighter radius
+          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24), // Tighter radius
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  playlist.name,
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: -0.3),
+                Expanded(
+                  child: Hero(
+                    tag: 'playlist_cover_${playlist.id}',
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        (playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: playlist.coverUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                color: Colors.transparent, // Fully transparent placeholder so glass shines through
+                                child: const Icon(Icons.music_note_rounded, color: Colors.white10, size: 48),
+                              ),
+                        // Inner elegant gradient overlay
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.transparent, Colors.black.withOpacity(0.4)], // Softer shadow
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                Text(
-                  '${playlist.songs?.length ?? 0} tracks',
-                  style: GoogleFonts.outfit(color: Colors.white30, fontSize: 12, fontWeight: FontWeight.w600),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent, // Transparent so the glass effect isn't muddy
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        playlist.name,
+                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: -0.2),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.music_note_rounded, color: Color(0xFF00E5FF), size: 12),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${playlist.songs.length} tracks',
+                            style: GoogleFonts.outfit(color: const Color(0xFF00E5FF).withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
-    );
+    ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.95, 0.95));
   }
 }
 
-class _CircularPlusButton extends StatelessWidget {
+class _CreatePlaylistCard extends StatelessWidget {
   final VoidCallback onTap;
-  const _CircularPlusButton({required this.onTap});
+  const _CreatePlaylistCard({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 44, height: 44,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          color: const Color(0xFF00E5FF).withOpacity(0.03),
+          borderRadius: BorderRadius.circular(24), // Match the playlist cards
+          border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.2), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00E5FF).withOpacity(0.05),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
         ),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withOpacity(0.1),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: const Color(0xFF00E5FF).withOpacity(0.3), blurRadius: 15),
+                ],
+              ),
+              child: const Icon(Icons.add_rounded, color: Color(0xFF00E5FF), size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Create Playlist',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF00E5FF),
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
-    );
+    ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.95, 0.95));
   }
 }
 

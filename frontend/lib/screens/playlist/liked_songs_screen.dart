@@ -20,7 +20,7 @@ class LikedSongsScreen extends ConsumerWidget {
     final player = ref.watch(playerProvider);
 
     return Scaffold(
-      backgroundColor: AColors.bg,
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           likedAsync.when(
@@ -57,7 +57,7 @@ class LikedSongsScreen extends ConsumerWidget {
                     expandedHeight: 320,
                     pinned: true,
                     stretch: true,
-                    backgroundColor: AColors.bg,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 22),
@@ -92,7 +92,7 @@ class LikedSongsScreen extends ConsumerWidget {
                                 gradient: LinearGradient(
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
-                                  colors: [AColors.bg, AColors.bg.withOpacity(0)],
+                                  colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                                 ),
                               ),
                             ),
@@ -154,6 +154,8 @@ class LikedSongsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 16),
                           _buildShuffleButton(ref, songs),
+                          const SizedBox(width: 16),
+                          _buildRepeatButton(ref),
                         ],
                       ),
                     ),
@@ -274,6 +276,41 @@ class LikedSongsScreen extends ConsumerWidget {
         child: Icon(Icons.shuffle_rounded, 
             color: player.shuffle ? AColors.primary : Colors.white, 
             size: 24),
+      ),
+    );
+  }
+
+  Widget _buildRepeatButton(WidgetRef ref) {
+    final player = ref.watch(playerProvider);
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        ref.read(playerProvider.notifier).toggleRepeat();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: player.repeatMode != RepeatMode.off
+              ? AColors.primary.withOpacity(0.2)
+              : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: player.repeatMode != RepeatMode.off
+                ? AColors.primary.withOpacity(0.5)
+                : Colors.white.withOpacity(0.1),
+          ),
+        ),
+        child: Icon(
+          player.repeatMode == RepeatMode.one
+              ? Icons.repeat_one_rounded
+              : Icons.repeat_rounded,
+          color: player.repeatMode != RepeatMode.off
+              ? AColors.primary
+              : Colors.white,
+          size: 24,
+        ),
       ),
     );
   }

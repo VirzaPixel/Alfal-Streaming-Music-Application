@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,7 +30,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
     final player = ref.watch(playerProvider);
 
     return Scaffold(
-      backgroundColor: AColors.bg,
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           playlistAsync.when(
@@ -63,7 +64,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                     expandedHeight: 400,
                     pinned: true,
                     stretch: true,
-                    backgroundColor: AColors.bg,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -84,16 +85,6 @@ class PlaylistDetailScreen extends ConsumerWidget {
                             CachedNetworkImage(
                               imageUrl: playlist.coverUrl!,
                               fit: BoxFit.cover,
-                            )
-                          else
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: palette,
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
                             ),
 
                           // Dark overlay for readability
@@ -104,7 +95,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.black.withOpacity(0.2),
-                                  AColors.bg.withOpacity(0.95),
+                                  Colors.black.withOpacity(0.4), // Softer overlay so grid is fully visible!
                                 ],
                               ),
                             ),
@@ -116,51 +107,61 @@ class PlaylistDetailScreen extends ConsumerWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 80),
+                                const SizedBox(height: 60),
                                 // Playlist Artwork Card
                                 Hero(
                                   tag: 'playlist_${playlist.id}',
                                   child: Container(
-                                    width: 160,
-                                    height: 160,
+                                    width: 180,
+                                    height: 180,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(28),
+                                      borderRadius: BorderRadius.circular(36),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.6),
-                                          blurRadius: 40,
-                                          offset: const Offset(0, 20),
+                                          color: Colors.black.withOpacity(0.5),
+                                          blurRadius: 30,
+                                          offset: const Offset(0, 15),
                                         )
                                       ],
                                     ),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(28),
+                                      borderRadius: BorderRadius.circular(36),
                                       child: playlist.coverUrl != null && playlist.coverUrl!.isNotEmpty
                                         ? CachedNetworkImage(
                                             imageUrl: playlist.coverUrl!,
                                             fit: BoxFit.cover,
                                           )
-                                        : Container(
-                                            color: Colors.white.withOpacity(0.1),
-                                            child: const Icon(Icons.music_note_rounded, color: Colors.white24, size: 64),
+                                        : ClipRRect(
+                                            borderRadius: BorderRadius.circular(36),
+                                            child: BackdropFilter(
+                                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.02),
+                                                  border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+                                                  borderRadius: BorderRadius.circular(36),
+                                                ),
+                                                child: const Icon(Icons.music_note_rounded, color: Colors.white24, size: 64),
+                                              ),
+                                            ),
                                           ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 28),
+                                const SizedBox(height: 24),
                                 Text(
                                   playlist.name,
                                   style: GoogleFonts.outfit(
-                                    fontSize: 34,
+                                    fontSize: 32,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     letterSpacing: -1.2,
                                   ),
                                   textAlign: TextAlign.center,
-                                ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
+                                ).animate().fadeIn(delay: 200.ms).scale(begin: const Offset(0.9, 0.9)),
                                 if (playlist.description != null && playlist.description!.isNotEmpty)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
+                                    padding: const EdgeInsets.only(top: 8, left: 32, right: 32),
                                     child: Text(
                                       playlist.description!,
                                       style: GoogleFonts.outfit(
@@ -174,14 +175,22 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ).animate().fadeIn(delay: 300.ms),
-                                const SizedBox(height: 12),
-                                Text(
-                                  '${songs.length} ${songs.length == 1 ? 'TRACK' : 'TRACKS'}',
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: AColors.primary.withOpacity(0.8),
-                                    letterSpacing: 2,
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                                  ),
+                                  child: Text(
+                                    '${songs.length} TRACKS',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      color: AColors.primaryLight,
+                                      letterSpacing: 1.5,
+                                    ),
                                   ),
                                 ).animate().fadeIn(delay: 400.ms),
                               ],
@@ -221,23 +230,23 @@ class PlaylistDetailScreen extends ConsumerWidget {
                               },
                               child: Container(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
+                                    const EdgeInsets.symmetric(vertical: 18),
                                 decoration: BoxDecoration(
+                                  gradient: player.sourceName == playlist.name
+                                      ? null
+                                      : AColors.primaryGradient,
                                   color: player.sourceName == playlist.name
-                                      ? AColors.primary.withOpacity(0.15)
-                                      : AColors.primary,
-                                  borderRadius: BorderRadius.circular(16),
+                                      ? Colors.white.withOpacity(0.05)
+                                      : null,
+                                  borderRadius: BorderRadius.circular(20),
                                   border: player.sourceName == playlist.name
-                                      ? Border.all(
-                                          color:
-                                              AColors.primary.withOpacity(0.3))
+                                      ? Border.all(color: Colors.white.withOpacity(0.1))
                                       : null,
                                   boxShadow: player.sourceName == playlist.name
                                       ? []
                                       : [
                                           BoxShadow(
-                                            color: AColors.primary
-                                                .withOpacity(0.35),
+                                            color: AColors.primary.withOpacity(0.3),
                                             blurRadius: 20,
                                             offset: const Offset(0, 8),
                                           ),
@@ -251,9 +260,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                               player.isPlaying
                                           ? Icons.pause_rounded
                                           : Icons.play_arrow_rounded,
-                                      color: player.sourceName == playlist.name
-                                          ? AColors.primary
-                                          : Colors.white,
+                                      color: Colors.white,
                                       size: 24,
                                     ),
                                     const SizedBox(width: 10),
@@ -262,15 +269,12 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                           ? (player.isPlaying
                                               ? 'PAUSE'
                                               : 'RESUME')
-                                          : 'PLAY',
+                                          : 'PLAY ALL',
                                       style: GoogleFonts.outfit(
-                                        color:
-                                            player.sourceName == playlist.name
-                                                ? AColors.primary
-                                                : Colors.white,
-                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
                                         fontSize: 14,
-                                        letterSpacing: 1.2,
+                                        letterSpacing: 1,
                                       ),
                                     ),
                                   ],
@@ -320,6 +324,38 @@ class PlaylistDetailScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 14),
+                          // Replay/Repeat Button
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              ref.read(playerProvider.notifier).toggleRepeat();
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: player.repeatMode != RepeatMode.off
+                                    ? AColors.primary.withOpacity(0.2)
+                                    : Colors.white.withOpacity(0.06),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: player.repeatMode != RepeatMode.off
+                                      ? AColors.primary.withOpacity(0.5)
+                                      : Colors.white.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Icon(
+                                player.repeatMode == RepeatMode.one
+                                    ? Icons.repeat_one_rounded
+                                    : Icons.repeat_rounded,
+                                color: player.repeatMode != RepeatMode.off
+                                    ? AColors.primary
+                                    : Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
                           // Edit/More Info
                           GestureDetector(
                             onTap: () {
@@ -364,7 +400,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
 
                   // ── Songs List ──
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 150),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 240),
                     sliver: songs.isEmpty
                         ? SliverToBoxAdapter(
                             child: _EmptyPlaylistState(),

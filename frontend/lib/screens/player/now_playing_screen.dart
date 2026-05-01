@@ -57,6 +57,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     final total = player.duration.inMilliseconds;
     final pos = player.position.inMilliseconds;
     final sliderVal = total > 0 ? (pos / total).clamp(0.0, 1.0) : 0.0;
+    
+    final liked = ref.watch(isLikedProvider(song.id));
 
     return GestureDetector(
       onVerticalDragUpdate: (details) {
@@ -91,7 +93,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 0), // Increased top padding to move header down
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -209,7 +211,23 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          const SizedBox(width: 48), // Spacer to replace shuffle
+                          IconButton(
+                            icon: Icon(
+                              liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              color: liked ? Colors.redAccent : Colors.white54,
+                              size: 28,
+                            ),
+                            onPressed: () async {
+                              HapticFeedback.mediumImpact();
+                              if (liked) {
+                                await ref.read(playlistServiceProvider).unlikeSong(song.id);
+                              } else {
+                                await ref.read(playlistServiceProvider).likeSong(song.id);
+                              }
+                              ref.invalidate(likedSongsProvider);
+                              ref.invalidate(profileStatsProvider);
+                            },
+                          ),
                           IconButton(
                             onPressed: () {
                               HapticFeedback.mediumImpact();
@@ -388,23 +406,6 @@ class _InfoBlock extends ConsumerWidget {
                 ),
               ],
             ),
-          ),
-          IconButton(
-            icon: Icon(
-              liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: liked ? Colors.redAccent : Colors.white30,
-              size: 32,
-            ),
-            onPressed: () async {
-              HapticFeedback.mediumImpact();
-              if (liked) {
-                await ref.read(playlistServiceProvider).unlikeSong(song.id);
-              } else {
-                await ref.read(playlistServiceProvider).likeSong(song.id);
-              }
-              ref.invalidate(likedSongsProvider);
-              ref.invalidate(profileStatsProvider);
-            },
           ),
         ],
       ),

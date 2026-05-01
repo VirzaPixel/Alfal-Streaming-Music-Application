@@ -58,11 +58,38 @@ class _AAnimatedBackgroundState extends State<AAnimatedBackground> with SingleTi
                 child: _GlowBlob(color: const Color(0xFF10B981).withOpacity(0.05), size: 260),
               ),
             ),
+            
+            // Cyber Grid Overlay
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: CustomPaint(painter: _DeepGridPainter()),
+              ),
+            ),
           ],
         );
       },
     );
   }
+}
+
+class _DeepGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = Colors.white.withOpacity(0.035)
+      ..strokeWidth = 1.0;
+    
+    const double step = 40;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DeepGridPainter oldDelegate) => false;
 }
 
 class _GlowBlob extends StatelessWidget {
