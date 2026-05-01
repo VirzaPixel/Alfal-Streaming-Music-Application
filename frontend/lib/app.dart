@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'config/theme.dart';
 import 'providers/auth_provider.dart';
@@ -33,6 +34,9 @@ class _MusicAppState extends ConsumerState<MusicApp> {
   Future<void> _initAudioService() async {
     // Inisialisasi audio handler tanpa AudioService
     try {
+      // Request notification permission safely when app starts
+      await Permission.notification.request();
+      
       audioHandler = AlfalAudioHandler();
       setState(() => _isReady = true);
     } catch (e) {

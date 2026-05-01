@@ -10,8 +10,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Request notification permission for Android 13+
-    await Permission.notification.request();
 
     // Load environment variables
     try {

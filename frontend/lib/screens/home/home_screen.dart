@@ -17,11 +17,22 @@ import '../../models/user_model.dart';
 import '../../widgets/song_options_sheet.dart';
 import '../profile/profile_screen.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider.select((s) => s.user));
     final playlistsAsync = ref.watch(playlistsProvider);
     final currentSong = ref.watch(playerProvider.select((s) => s.currentSong));
@@ -222,9 +233,6 @@ class HomeScreen extends ConsumerWidget {
       ],
     );
   }
-
-
-
 }
 
 class _HomeSection extends StatelessWidget {
@@ -588,18 +596,18 @@ class _PlaylistCard extends StatelessWidget {
                                   Icons.playlist_play_rounded,
                                   color: Colors.white.withOpacity(0.15),
                                   size: 48,
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        : Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.1),
-                                  Colors.white.withOpacity(0.03),
-                                ],
-                                begin: Alignment.topLeft,
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(0.1),
+                                    Colors.white.withOpacity(0.03),
+                                  ],
+                                  begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                               ),
@@ -611,61 +619,60 @@ class _PlaylistCard extends StatelessWidget {
                                 ),
                               ),
                             ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              playlist.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: Colors.white,
-                  letterSpacing: -0.5),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${playlist.songs?.length ?? 0} songs',
-              style: GoogleFonts.outfit(
-                  color: Colors.white24,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500),
-            ),
-          ],
+              const SizedBox(height: 14),
+              Text(
+                playlist.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: Colors.white,
+                    letterSpacing: -0.5),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${playlist.songs?.length ?? 0} songs',
+                style: GoogleFonts.outfit(
+                    color: Colors.white24,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
-
-class _EmptyPlaylists extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return AGlass(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(32),
-      borderRadius: BorderRadius.circular(32),
-      opacity: 0.05,
-      child: Center(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
-              child: Icon(Icons.auto_awesome_mosaic_rounded, color: Colors.white.withOpacity(0.3), size: 40),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'No playlists yet',
-              style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-          ],
+  
+  class _EmptyPlaylists extends StatelessWidget {
+    @override
+    Widget build(BuildContext context) {
+      return AGlass(
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.all(32),
+        borderRadius: BorderRadius.circular(32),
+        opacity: 0.05,
+        child: Center(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
+                child: Icon(Icons.auto_awesome_mosaic_rounded, color: Colors.white.withOpacity(0.3), size: 40),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'No playlists yet',
+                style: GoogleFonts.outfit(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
-

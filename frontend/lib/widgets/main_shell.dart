@@ -37,7 +37,6 @@ class _MainShellState extends ConsumerState<MainShell> {
     final canUpload = user?.canUpload ?? false;
     final isAdmin = user?.isAdmin ?? false;
     
-    // Fixed tab order - always consistent for IndexedStack logic
     final allTabs = [
       (type: TabType.home, icon: Icons.grid_view_rounded, label: 'Home', screen: const HomeScreen(), visible: true),
       (type: TabType.search, icon: Icons.search_rounded, label: 'Search', screen: const SearchScreen(), visible: true),
@@ -47,9 +46,7 @@ class _MainShellState extends ConsumerState<MainShell> {
       (type: TabType.profile, icon: Icons.person_rounded, label: 'Profile', screen: const ProfileScreen(), visible: true),
     ];
     
-    // Visible items for nav bar
     final items = allTabs.where((t) => t.visible).toList();
-    
     final currentTabIndex = items.indexWhere((e) => e.type == tab);
     final safeIndex = currentTabIndex != -1 ? currentTabIndex : 0;
 
@@ -76,35 +73,41 @@ class _MainShellState extends ConsumerState<MainShell> {
         resizeToAvoidBottomInset: false, 
         body: Stack(
           children: [
-            const Positioned.fill(child: AAnimatedBackground()),
+            const Positioned.fill(child: RepaintBoundary(child: AAnimatedBackground())),
             
             IndexedStack(
               index: safeIndex,
               children: items.map((e) => _buildTab(e.type, e.screen)).toList(),
             ),
 
+            // Floating Navigation & Player Bar
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 12,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const MiniPlayer(),
-                  const SizedBox(height: 8),
-                  _PremiumNavBar(
-                    currentIndex: safeIndex,
-                    items: items.map((e) => (icon: e.icon, label: e.label)).toList(),
-                    onTap: (i) {
-                      final clickedType = items[i].type;
-                      if (clickedType == tab) {
-                        _navKeys[clickedType]?.currentState?.popUntil((r) => r.isFirst);
-                      } else {
-                        ref.read(shellTabProvider.notifier).state = clickedType;
-                      }
-                    },
+              left: 12,
+              right: 12,
+              bottom: 0,
+              child: SafeArea(
+                child: RepaintBoundary(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const MiniPlayer(),
+                      const SizedBox(height: 8),
+                      _PremiumNavBar(
+                        currentIndex: safeIndex,
+                        items: items.map((e) => (icon: e.icon, label: e.label)).toList(),
+                        onTap: (i) {
+                          final clickedType = items[i].type;
+                          if (clickedType == tab) {
+                            _navKeys[clickedType]?.currentState?.popUntil((r) => r.isFirst);
+                          } else {
+                            ref.read(shellTabProvider.notifier).state = clickedType;
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -118,8 +121,8 @@ class _MainShellState extends ConsumerState<MainShell> {
       key: _navKeys[type],
       onGenerateRoute: (settings) => MaterialPageRoute(
         builder: (ctx) => Padding(
-          // Add bottom padding to avoid overlap with floating navbar + mini player
-          padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom > 0 ? 0 : 100),
+          // Ensure content is never blocked by the floating navigation bar (MiniPlayer + NavBar)
+          padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom > 0 ? 0 : 180),
           child: root,
         ),
         settings: settings,
@@ -137,16 +140,15 @@ class _PremiumNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
+      borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12), // Reduced from 30 for performance
         child: Container(
-          height: 76,
+          height: 72,
           decoration: BoxDecoration(
-            color: AColors.bg.withOpacity(0.7),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(
-                color: Colors.white.withOpacity(0.06), width: 1.5),
+            color: AColors.bg.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.5),
           ),
           child: Row(
             children: List.generate(items.length, (i) {
@@ -172,11 +174,7 @@ class _NavTab extends StatefulWidget {
   final String label;
   final bool isActive;
   final VoidCallback onTap;
-  const _NavTab(
-      {required this.icon,
-      required this.label,
-      required this.isActive,
-      required this.onTap});
+  const _NavTab({required this.icon, required this.label, required this.isActive, required this.onTap});
 
   @override
   State<_NavTab> createState() => _NavTabState();
@@ -190,63 +188,39 @@ class _NavTabState extends State<_NavTab> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _scaleAnim = Tween(begin: 1.0, end: 0.88).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
-    );
+    _scaleAnim = Tween(begin: 1.0, end: 0.9).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
+  void dispose() { _ctrl.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) {
-        _ctrl.reverse();
-        widget.onTap();
-      },
+      onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
       onTapCancel: () => _ctrl.reverse(),
       behavior: HitTestBehavior.opaque,
       child: ScaleTransition(
         scale: _scaleAnim,
-        child: SizedBox.expand(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: widget.isActive
-                      ? AColors.primary.withOpacity(0.15)
-                      : Colors.transparent,
-                ),
-                child: Icon(
-                  widget.icon,
-                  size: 24,
-                  color: widget.isActive
-                      ? AColors.primary
-                      : Colors.white.withOpacity(0.25),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              widget.icon,
+              size: 24,
+              color: widget.isActive ? AColors.primary : Colors.white.withOpacity(0.3),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.label,
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                fontWeight: widget.isActive ? FontWeight.w800 : FontWeight.w500,
+                color: widget.isActive ? AColors.primary : Colors.white.withOpacity(0.3),
               ),
-              const SizedBox(height: 4),
-              Text(
-                widget.label,
-                style: GoogleFonts.outfit(
-                  fontSize: 10,
-                  fontWeight: widget.isActive ? FontWeight.w800 : FontWeight.w500,
-                  color: widget.isActive
-                      ? AColors.primary
-                      : Colors.white.withOpacity(0.2),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

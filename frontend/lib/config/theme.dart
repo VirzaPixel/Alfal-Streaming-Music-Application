@@ -77,6 +77,10 @@ class ATheme {
     );
 
     return base.copyWith(
+      splashFactory: NoSplash.splashFactory, // Disable splash effect
+      highlightColor: Colors.transparent, // Disable highlight color
+      hoverColor: Colors.transparent, // Disable hover color
+      focusColor: Colors.transparent, // Disable focus color
       scaffoldBackgroundColor: AColors.bg,
       primaryColor: AColors.primary,
       colorScheme: const ColorScheme.dark(
@@ -120,17 +124,17 @@ class ATheme {
         filled: true,
         fillColor: AColors.surface,
         hintStyle: GoogleFonts.outfit(color: AColors.textHint, fontSize: 15),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
           borderSide: BorderSide.none,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AColors.primary, width: 2),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AColors.primary, width: 2),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AColors.divider, width: 1),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: BorderSide(color: AColors.divider, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 24,
@@ -142,8 +146,8 @@ class ATheme {
           backgroundColor: AColors.primary,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 60),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
           textStyle: GoogleFonts.outfit(
             fontSize: 17,
@@ -159,9 +163,9 @@ class ATheme {
         color: AColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: AColors.divider, width: 1),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+          side: BorderSide(color: AColors.divider, width: 1),
         ),
       ),
       dividerColor: AColors.divider,

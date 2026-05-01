@@ -40,22 +40,23 @@ class _AAnimatedBackgroundState extends State<AAnimatedBackground> with SingleTi
             Positioned(
               left: -80 + math.sin(t * math.pi * 2) * 60,
               top: -100 + math.cos(t * math.pi * 2) * 50,
-              child: _GlowBlob(
-                  color: AColors.primary.withOpacity(0.12), size: 450),
+              child: RepaintBoundary(
+                child: _GlowBlob(color: AColors.primary.withOpacity(0.12), size: 450),
+              ),
             ),
             Positioned(
               right: -60 + math.cos(t * math.pi * 2) * 50,
               bottom: 100 + math.sin(t * math.pi * 2) * 60,
-              child: _GlowBlob(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.08),
-                  size: 380),
+              child: RepaintBoundary(
+                child: _GlowBlob(color: const Color(0xFF8B5CF6).withOpacity(0.08), size: 380),
+              ),
             ),
             Positioned(
               left: size.width / 2 - 130 + math.sin(t * math.pi * 4) * 40,
               top: size.height / 2 - 130,
-              child: _GlowBlob(
-                  color: const Color(0xFF10B981).withOpacity(0.05),
-                  size: 260),
+              child: RepaintBoundary(
+                child: _GlowBlob(color: const Color(0xFF10B981).withOpacity(0.05), size: 260),
+              ),
             ),
           ],
         );

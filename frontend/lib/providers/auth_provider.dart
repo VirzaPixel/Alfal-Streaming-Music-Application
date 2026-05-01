@@ -152,19 +152,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   String _parseError(Object e) {
     final str = e.toString().toLowerCase();
-    if (str.contains('invalid login credentials')) return 'Email atau password salah.';
-    if (str.contains('user already registered')) return 'Email sudah terdaftar.';
-    if (str.contains('email not confirmed')) return 'Email belum diverifikasi. Silakan masukkan kode OTP dari email Anda.';
+    if (str.contains('invalid login credentials')) return 'Invalid email or password.';
+    if (str.contains('user already registered')) return 'This email is already registered.';
+    if (str.contains('email not confirmed')) return 'Email not verified. Please check your inbox.';
     if (str.contains('rate limit') || str.contains('over_email_send_rate_limit') || str.contains('429')) {
-      return 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.';
+      return 'Too many attempts. Please wait a few minutes.';
     }
     if (str.contains('otp_expired') || str.contains('token has expired')) {
-      return 'Kode OTP sudah kadaluarsa. Klik "Resend" untuk mendapatkan kode baru.';
+      return 'Code expired. Please request a new one.';
+    }
+    if (str.contains('invalid token') || str.contains('token is invalid') || str.contains('bad_code')) {
+      return 'Invalid code. Please check and try again.';
     }
     if (str.contains('network') || str.contains('socketexception')) {
-      return 'Masalah koneksi. Periksa internet Anda.';
+      return 'Connection problem. Please check your internet.';
     }
-    return 'Terjadi kesalahan. Silakan coba lagi.';
+    return 'Something went wrong. Please try again.';
   }
 }
 
