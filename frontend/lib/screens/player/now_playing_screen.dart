@@ -8,8 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/theme.dart';
-import '../../providers/player_provider.dart' hide RepeatMode;
-import '../../providers/player_provider.dart' as pp show RepeatMode;
+import '../../providers/player_provider.dart';
 import '../../providers/playlist_provider.dart';
 import '../../widgets/song_options_sheet.dart';
 
@@ -251,10 +250,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                 size: 48, color: Colors.white),
                           ),
                           _SmallBtn(
-                              icon: player.repeatMode == pp.RepeatMode.one
+                              icon: player.repeatMode == MusicRepeatMode.one
                                   ? Icons.repeat_one_rounded
                                   : Icons.repeat_rounded,
-                              active: player.repeatMode != pp.RepeatMode.off,
+                              active: player.repeatMode != MusicRepeatMode.off,
                               onTap: notifier.toggleRepeat),
                         ],
                       ),
@@ -369,7 +368,7 @@ class _InfoBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final liked = ref.watch(isLikedProvider(song.id));
+
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),

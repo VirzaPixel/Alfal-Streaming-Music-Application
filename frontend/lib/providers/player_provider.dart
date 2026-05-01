@@ -6,7 +6,7 @@ import '../services/connection_service.dart';
 import '../services/listening_history_service.dart';
 import '../app.dart'; // To access global audioHandler
 
-enum RepeatMode { off, all, one }
+enum MusicRepeatMode { off, all, one }
 
 // ── Player State ──────────────────────────────────────────────
 class PlayerState {
@@ -14,7 +14,7 @@ class PlayerState {
   final String? sourceName;
   final bool isPlaying;
   final bool shuffle;
-  final RepeatMode repeatMode;
+  final MusicRepeatMode repeatMode;
   final Duration position;
   final Duration duration;
   final List<SongModel> queue;
@@ -24,7 +24,7 @@ class PlayerState {
     this.sourceName,
     this.isPlaying = false,
     this.shuffle = false,
-    this.repeatMode = RepeatMode.off,
+    this.repeatMode = MusicRepeatMode.off,
     this.position = Duration.zero,
     this.duration = Duration.zero,
     this.queue = const [],
@@ -37,7 +37,7 @@ class PlayerState {
     String? sourceName,
     bool? isPlaying,
     bool? shuffle,
-    RepeatMode? repeatMode,
+    MusicRepeatMode? repeatMode,
     Duration? position,
     Duration? duration,
     List<SongModel>? queue,
@@ -139,15 +139,15 @@ class PlayerNotifier extends StateNotifier<PlayerState> {
 
   void toggleRepeat() {
     final nextMode = switch (state.repeatMode) {
-      RepeatMode.off => RepeatMode.all,
-      RepeatMode.all => RepeatMode.one,
-      RepeatMode.one => RepeatMode.off,
+      MusicRepeatMode.off => MusicRepeatMode.all,
+      MusicRepeatMode.all => MusicRepeatMode.one,
+      MusicRepeatMode.one => MusicRepeatMode.off,
     };
     
     state = state.copyWith(repeatMode: nextMode);
     _handler.setRepeatMode(
-      nextMode == RepeatMode.all, 
-      nextMode == RepeatMode.one
+      nextMode == MusicRepeatMode.all, 
+      nextMode == MusicRepeatMode.one
     );
   }
 

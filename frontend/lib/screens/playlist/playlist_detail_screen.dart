@@ -51,10 +51,6 @@ class PlaylistDetailScreen extends ConsumerWidget {
             ),
             data: (playlist) {
               final songs = playlist.songs;
-              final palette = [
-                const Color(0xFF6366F1),
-                const Color(0xFF8B5CF6)
-              ];
 
               return CustomScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -334,21 +330,21 @@ class PlaylistDetailScreen extends ConsumerWidget {
                               duration: const Duration(milliseconds: 300),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: player.repeatMode != RepeatMode.off
+                                color: player.repeatMode != MusicRepeatMode.off
                                     ? AColors.primary.withOpacity(0.2)
                                     : Colors.white.withOpacity(0.06),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: player.repeatMode != RepeatMode.off
+                                  color: player.repeatMode != MusicRepeatMode.off
                                       ? AColors.primary.withOpacity(0.5)
                                       : Colors.white.withOpacity(0.1),
                                 ),
                               ),
                               child: Icon(
-                                player.repeatMode == RepeatMode.one
+                                player.repeatMode == MusicRepeatMode.one
                                     ? Icons.repeat_one_rounded
                                     : Icons.repeat_rounded,
-                                color: player.repeatMode != RepeatMode.off
+                                color: player.repeatMode != MusicRepeatMode.off
                                     ? AColors.primary
                                     : Colors.white,
                                 size: 22,

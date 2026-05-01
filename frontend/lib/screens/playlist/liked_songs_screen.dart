@@ -292,21 +292,21 @@ class LikedSongsScreen extends ConsumerWidget {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          color: player.repeatMode != RepeatMode.off
+          color: player.repeatMode != MusicRepeatMode.off
               ? AColors.primary.withOpacity(0.2)
               : Colors.white.withOpacity(0.06),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: player.repeatMode != RepeatMode.off
+            color: player.repeatMode != MusicRepeatMode.off
                 ? AColors.primary.withOpacity(0.5)
                 : Colors.white.withOpacity(0.1),
           ),
         ),
         child: Icon(
-          player.repeatMode == RepeatMode.one
+          player.repeatMode == MusicRepeatMode.one
               ? Icons.repeat_one_rounded
               : Icons.repeat_rounded,
-          color: player.repeatMode != RepeatMode.off
+          color: player.repeatMode != MusicRepeatMode.off
               ? AColors.primary
               : Colors.white,
           size: 24,
