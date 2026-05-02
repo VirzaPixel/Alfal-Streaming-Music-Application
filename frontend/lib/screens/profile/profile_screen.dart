@@ -371,7 +371,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       barrierLabel: '',
       barrierColor: Colors.black.withOpacity(0.8),
       transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (_, __, ___) => Dialog(
+      pageBuilder: (dialogCtx, __, ___) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
           height: MediaQuery.of(context).size.height * 0.6,
@@ -383,7 +383,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('ALL PLAYLISTS', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, color: Colors.white38)),
+                  IconButton(onPressed: () => Navigator.pop(dialogCtx), icon: const Icon(Icons.close_rounded, color: Colors.white38)),
                 ],
               ),
               const SizedBox(height: 16),

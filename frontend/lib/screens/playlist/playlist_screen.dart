@@ -542,10 +542,16 @@ class _CreatePlaylistDialogState extends ConsumerState<_CreatePlaylistDialog> {
     
     final playlistName = _ctrl.text.trim();
     
-    // Close the dialog FIRST so the exit animation is butter smooth
+    // Hide keyboard FIRST to avoid heavy Scaffold resize lag happening simultaneously with dialog pop
+    FocusScope.of(context).unfocus();
+    await Future.delayed(const Duration(milliseconds: 150));
+    
+    if (!mounted) return;
+    
+    // Close the dialog
     Navigator.pop(context);
     
-    // Wait for the dialog animation to finish before doing heavy state updates
+    // Wait for the dialog animation to finish before doing heavy API calls
     await Future.delayed(const Duration(milliseconds: 300));
     
     try {
