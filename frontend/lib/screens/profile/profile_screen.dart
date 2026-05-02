@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -364,63 +365,75 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showAllPlaylists(List<dynamic> currentPlaylists) {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(color: AColors.surface, borderRadius: BorderRadius.vertical(top: Radius.circular(36))),
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          children: [
-             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('ALL PLAYLISTS', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, color: Colors.white38)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: currentPlaylists.length,
-                itemBuilder: (ctx, i) {
-                  final p = currentPlaylists[i];
-                  final String coverUrl = (p is Map ? p['cover_url']?.toString() : p.coverUrl) ?? '';
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      tileColor: Colors.white.withOpacity(0.03),
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: coverUrl.isNotEmpty
-                          ? CachedNetworkImage(imageUrl: coverUrl, width: 50, height: 50, fit: BoxFit.cover)
-                          : Container(width: 50, height: 50, color: Colors.white12, child: const Icon(Icons.music_note_rounded)),
-                      ),
-                      title: Text((p is Map ? p['name']?.toString() : p.name) ?? 'Playlist', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
-                      subtitle: Text('${(p is Map ? (p['playlist_songs'] as List?)?.length : p.songs.length) ?? 0} songs', style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white24),
-                      onTap: () {
-                        Navigator.pop(context);
-                        final int playlistId = p is Map ? (p['id'] as int) : p.id;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PlaylistDetailScreen(playlistId: playlistId),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black.withOpacity(0.8),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (_, __, ___) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.6,
+          decoration: BoxDecoration(color: AColors.surface, borderRadius: BorderRadius.circular(36), border: Border.all(color: Colors.white.withOpacity(0.12))),
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            children: [
+               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('ALL PLAYLISTS', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded, color: Colors.white38)),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: currentPlaylists.length,
+                  itemBuilder: (ctx, i) {
+                    final p = currentPlaylists[i];
+                    final String coverUrl = (p is Map ? p['cover_url']?.toString() : p.coverUrl) ?? '';
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        tileColor: Colors.white.withOpacity(0.03),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: coverUrl.isNotEmpty
+                            ? CachedNetworkImage(imageUrl: coverUrl, width: 50, height: 50, fit: BoxFit.cover)
+                            : Container(width: 50, height: 50, color: Colors.white12, child: const Icon(Icons.music_note_rounded)),
+                        ),
+                        title: Text((p is Map ? p['name']?.toString() : p.name) ?? 'Playlist', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+                        subtitle: Text('${(p is Map ? (p['playlist_songs'] as List?)?.length : p.songs.length) ?? 0} songs', style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12)),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white24),
+                        onTap: () {
+                          Navigator.pop(context);
+                          final int playlistId = p is Map ? (p['id'] as int) : p.id;
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (_) => PlaylistDetailScreen(playlistId: playlistId),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+      transitionBuilder: (_, animation, __, child) {
+        return ScaleTransition(
+          scale: animation.drive(Tween(begin: 0.9, end: 1.0).chain(CurveTween(curve: Curves.easeOutCubic))),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
     );
   }
 

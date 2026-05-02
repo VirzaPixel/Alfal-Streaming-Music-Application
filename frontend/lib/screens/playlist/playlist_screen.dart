@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -96,12 +97,7 @@ class PlaylistScreen extends ConsumerWidget {
               ),
               onTap: () => Navigator.push(
                 context,
-                PageRouteBuilder(
-                  opaque: false,
-                  barrierColor: Colors.black.withOpacity(0.3),
-                  pageBuilder: (_, __, ___) => const LikedSongsScreen(),
-                  transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
-                ),
+                CupertinoPageRoute(builder: (_) => const LikedSongsScreen()),
               ),
             ),
           ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
@@ -179,22 +175,7 @@ class PlaylistScreen extends ConsumerWidget {
                       playlist: playlist,
                       onTap: () => Navigator.push(
                         context,
-                        PageRouteBuilder(
-                          opaque: false,
-                          barrierColor: Colors.black.withOpacity(0.3),
-                          transitionDuration: const Duration(milliseconds: 300),
-                          reverseTransitionDuration: const Duration(milliseconds: 250),
-                          pageBuilder: (_, __, ___) => PlaylistDetailScreen(playlistId: playlist.id),
-                          transitionsBuilder: (_, animation, __, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: animation.drive(Tween(begin: const Offset(0.05, 0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOut))),
-                                child: child,
-                              ),
-                            );
-                          },
-                        ),
+                        CupertinoPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: playlist.id)),
                       ),
                       onDelete: () => _confirmDelete(context, ref, playlist),
                     );
@@ -558,30 +539,28 @@ class _CreatePlaylistDialogState extends ConsumerState<_CreatePlaylistDialog> {
 
   Future<void> _create() async {
     if (_ctrl.text.trim().isEmpty) return;
-    setState(() => _isLoading = true);
+    
+    final playlistName = _ctrl.text.trim();
+    
+    // Close the dialog FIRST so the exit animation is butter smooth
+    Navigator.pop(context);
+    
+    // Wait for the dialog animation to finish before doing heavy state updates
+    await Future.delayed(const Duration(milliseconds: 300));
+    
     try {
       // Optimistic update for the global auth state (our playlist count)
       ref.read(authProvider.notifier).updateFollowCounts(playlistDelta: 1);
 
-      await ref.read(playlistServiceProvider).createPlaylist(_ctrl.text.trim());
+      await ref.read(playlistServiceProvider).createPlaylist(playlistName);
       ref.invalidate(playlistsProvider);
-      
-      if (mounted) {
-        Navigator.pop(context);
-      }
       
       // Sync background
       ref.read(authProvider.notifier).refreshProfile();
     } catch (e) {
       // Revert optimistic update on error
       ref.read(authProvider.notifier).updateFollowCounts(playlistDelta: -1);
-      
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create playlist.')),
-        );
-      }
+      // Optional: show error toast here if we have a global scaffold messenger key
     }
   }
 }

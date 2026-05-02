@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,7 @@ import '../../widgets/top_navbar.dart';
 import '../../widgets/glass_container.dart';
 import '../../models/user_model.dart';
 import '../../widgets/song_options_sheet.dart';
+import '../../widgets/main_shell.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -138,12 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Colors.redAccent,
                 onTap: () => Navigator.push(
                   context,
-                  PageRouteBuilder(
-                    opaque: false,
-                    barrierColor: Colors.black.withOpacity(0.3),
-                    pageBuilder: (_, __, ___) => const LikedSongsScreen(),
-                    transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
-                  ),
+                  CupertinoPageRoute(builder: (_) => const LikedSongsScreen()),
                 ),
               ),
               // Get first 3 playlists
@@ -153,12 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       image: p.coverUrl,
                       onTap: () => Navigator.push(
                         context,
-                        PageRouteBuilder(
-                          opaque: false,
-                          barrierColor: Colors.black.withOpacity(0.3),
-                          pageBuilder: (_, __, ___) => PlaylistDetailScreen(playlistId: p.id),
-                          transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
-                        ),
+                        CupertinoPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: p.id)),
                       ),
                     )),
                 orElse: () => [],
@@ -658,16 +650,15 @@ class _PlaylistCard extends StatelessWidget {
     }
   }
 
-  class _ExplorePlaylistCard extends StatelessWidget {
+  class _ExplorePlaylistCard extends ConsumerWidget {
     const _ExplorePlaylistCard();
 
     @override
-    Widget build(BuildContext context) {
+    Widget build(BuildContext context, WidgetRef ref) {
       return GestureDetector(
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Explore Playlists coming soon!')),
-          );
+          // Redirect to Playlist (Library) tab
+          ref.read(shellTabProvider.notifier).state = TabType.library;
         },
         child: Container(
           width: 160,

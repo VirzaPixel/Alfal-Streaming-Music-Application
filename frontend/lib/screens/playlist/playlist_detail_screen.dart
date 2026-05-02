@@ -30,7 +30,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
     final player = ref.watch(playerProvider);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AColors.bg,
       body: Stack(
         children: [
           playlistAsync.when(

@@ -20,7 +20,7 @@ class LikedSongsScreen extends ConsumerWidget {
     final player = ref.watch(playerProvider);
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AColors.bg,
       body: Stack(
         children: [
           likedAsync.when(
