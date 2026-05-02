@@ -94,7 +94,15 @@ class PlaylistScreen extends ConsumerWidget {
               gradient: const LinearGradient(
                 colors: [Color(0xFF8B5CF6), Color(0xFFC026D3)],
               ),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LikedSongsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                PageRouteBuilder(
+                  opaque: false,
+                  barrierColor: Colors.black.withOpacity(0.3),
+                  pageBuilder: (_, __, ___) => const LikedSongsScreen(),
+                  transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+                ),
+              ),
             ),
           ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
         ),
@@ -171,7 +179,22 @@ class PlaylistScreen extends ConsumerWidget {
                       playlist: playlist,
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: playlist.id)),
+                        PageRouteBuilder(
+                          opaque: false,
+                          barrierColor: Colors.black.withOpacity(0.3),
+                          transitionDuration: const Duration(milliseconds: 300),
+                          reverseTransitionDuration: const Duration(milliseconds: 250),
+                          pageBuilder: (_, __, ___) => PlaylistDetailScreen(playlistId: playlist.id),
+                          transitionsBuilder: (_, animation, __, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: animation.drive(Tween(begin: const Offset(0.05, 0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOut))),
+                                child: child,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                       onDelete: () => _confirmDelete(context, ref, playlist),
                     );
@@ -187,10 +210,19 @@ class PlaylistScreen extends ConsumerWidget {
   }
 
   void _showCreateDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showGeneralDialog(
       context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
       barrierColor: Colors.black.withOpacity(0.8),
-      builder: (_) => const _CreatePlaylistDialog(),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (_, __, ___) => const _CreatePlaylistDialog(),
+      transitionBuilder: (_, animation, __, child) {
+        return ScaleTransition(
+          scale: animation.drive(Tween(begin: 0.9, end: 1.0).chain(CurveTween(curve: Curves.easeOutCubic))),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
     );
   }
 
@@ -243,7 +275,7 @@ class _FeaturedLibraryTile extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(32),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(

@@ -46,7 +46,7 @@ class SongTile extends ConsumerWidget {
             child: AnimatedContainer(
               duration: 400.ms,
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 color: isActive

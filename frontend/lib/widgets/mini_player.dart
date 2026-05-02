@@ -26,13 +26,14 @@ class MiniPlayer extends ConsumerWidget {
         context,
         PageRouteBuilder(
           opaque: false,
-          transitionDuration: const Duration(milliseconds: 400),
+          barrierColor: Colors.black.withOpacity(0.5),
+          transitionDuration: const Duration(milliseconds: 350),
           reverseTransitionDuration: const Duration(milliseconds: 300),
-          pageBuilder: (_, animation, __) => const NowPlayingScreen(),
-          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+          pageBuilder: (_, __, ___) => const NowPlayingScreen(),
+          transitionsBuilder: (_, animation, __, child) {
             return SlideTransition(
-              position: animation.drive(Tween(begin: const Offset(0.0, 1.0), end: Offset.zero).chain(CurveTween(curve: Curves.fastLinearToSlowEaseIn))),
-              child: FadeTransition(opacity: animation, child: child),
+              position: animation.drive(Tween(begin: const Offset(0, 1), end: Offset.zero).chain(CurveTween(curve: Curves.easeOutCubic))),
+              child: child,
             );
           },
         ),
@@ -179,7 +180,7 @@ class _AnimatedAlbumArt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Hero(
-      tag: 'player_art_$songId',
+      tag: 'song_art_$songId',
       child: RepaintBoundary(
         child: Container(
           width: 52,

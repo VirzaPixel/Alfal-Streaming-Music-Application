@@ -106,7 +106,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                 const SizedBox(height: 60),
                                 // Playlist Artwork Card
                                 Hero(
-                                  tag: 'playlist_${playlist.id}',
+                                  tag: 'playlist_cover_${playlist.id}',
                                   child: Container(
                                     width: 180,
                                     height: 180,
@@ -130,7 +130,7 @@ class PlaylistDetailScreen extends ConsumerWidget {
                                         : ClipRRect(
                                             borderRadius: BorderRadius.circular(36),
                                             child: BackdropFilter(
-                                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                                               child: Container(
                                                 decoration: BoxDecoration(
                                                   color: Colors.white.withOpacity(0.02),

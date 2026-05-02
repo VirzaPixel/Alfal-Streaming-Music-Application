@@ -136,14 +136,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 label: 'Liked Songs',
                 icon: Icons.favorite_rounded,
                 color: Colors.redAccent,
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LikedSongsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    opaque: false,
+                    barrierColor: Colors.black.withOpacity(0.3),
+                    pageBuilder: (_, __, ___) => const LikedSongsScreen(),
+                    transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+                  ),
+                ),
               ),
               // Get first 3 playlists
               ...playlistsAsync.maybeWhen(
                 data: (list) => list.take(3).map((p) => _QuickAccessTile(
                       label: p.name,
                       image: p.coverUrl,
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PlaylistDetailScreen(playlistId: p.id))),
+                      onTap: () => Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          opaque: false,
+                          barrierColor: Colors.black.withOpacity(0.3),
+                          pageBuilder: (_, __, ___) => PlaylistDetailScreen(playlistId: p.id),
+                          transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+                        ),
+                      ),
                     )),
                 orElse: () => [],
               )
